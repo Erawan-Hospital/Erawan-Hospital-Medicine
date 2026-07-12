@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -o -E 'react[^\"]{0,40}|ReactDOM[^\"]{0,20}|unpkg[^\"]*|cdn[^\"]*|DOMContentLoaded|createRoot|bootDcDocument|autoBoot|querySelectorAll\\\\\\(\\\\\\\\\"x-dc' C:/Users/USER/.claude/projects/C--Users-USER-OneDrive-Desktop-Erawan-Ya-Stock/332614a6-4a25-4c98-bdbb-65649221d0d2/tool-results/toolu_01Kdea2boMxfizia5ooFH7r8.txt)",
+      "Bash(python -m http.server 8777 --bind 127.0.0.1)",
+      "Bash(grep -o -E 'loginUser[^;]{0,40}|loginPass[^;]{0,40}|password[^,}]{0,30}|username[^,}]{0,30}|admin[^\"'\\\\'',}]{0,20}|'\\\\''[a-zA-Z0-9]{4,12}'\\\\''[^,]{0,0}' 'C:/Users/USER/OneDrive/Desktop/Erawan Ya Stock/คลังยา Dashboard.dc.html')",
+      "Bash(taskkill //F //FI \"WINDOWTITLE eq *http.server*\")",
+      "Bash(kill %1)",
+      "Bash(python - 'C:/Users/USER/OneDrive/Desktop/Erawan Ya Stock/คลังยา Dashboard.dc.html' C:/Users/USER/AppData/Local/Temp/claude/C--Users-USER-OneDrive-Desktop-Erawan-Ya-Stock/332614a6-4a25-4c98-bdbb-65649221d0d2/scratchpad/dc-script.js)",
+      "Bash(python \"C:/Users/USER/AppData/Local/Temp/claude/C--Users-USER-OneDrive-Desktop-Erawan-Ya-Stock/332614a6-4a25-4c98-bdbb-65649221d0d2/scratchpad/mockserver.py\")",
+      "Bash(curl -s http://127.0.0.1:8788/api/data)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8788/)",
+      "Bash(exit 1)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git add *)"
+    ]
+  }
+}

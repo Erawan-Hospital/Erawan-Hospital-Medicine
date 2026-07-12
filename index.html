@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Noto Sans Thai', 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+    a { color: var(--accent); }
+    a:hover { color: var(--accent-2); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</helmet>
+
+<div style="{{ rootStyle }}" data-screen-label="ระบบแจ้งเตือนยาใกล้หมดอายุ" style2="unused">
+
+<!-- ===================== LOGIN PAGE ===================== -->
+<sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}" data-screen-label="Login">
+  <div style="position:relative; min-height:100vh; background: var(--bg); color: var(--text); display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; font-family:'Noto Sans Thai','Inter',sans-serif;">
+    <div style="position:absolute; inset:0; overflow:hidden; pointer-events:none;">
+      <sc-for list="{{ loginWatermarks }}" as="wm" hint-placeholder-count="20">
+        <img src="assets/hospital-logo.png" alt="" style="position:absolute; top:{{ wm.top }}%; left:{{ wm.left }}%; width:{{ wm.size }}px; height:{{ wm.size }}px; object-fit:contain; opacity:0.1; transform:rotate({{ wm.rot }}deg);" />
+      </sc-for>
+    </div>
+    <div style="position:relative; width:380px; max-width:92vw; background:var(--card); border:1px solid var(--border); border-radius:20px; padding:36px 32px; box-shadow:0 20px 60px rgba(0,0,0,0.25); display:flex; flex-direction:column; align-items:center; gap:6px;">
+      <img src="assets/hospital-logo.png" alt="Erawan Hospital logo" style="width:110px; height:110px; object-fit:contain; margin-bottom:6px;" />
+      <div style="font-size:17px; font-weight:800; text-align:center;">โรงพยาบาลเอราวัณ จังหวัดเลย</div>
+      <div style="font-size:13px; color:var(--text-dim); text-align:center; margin-bottom:18px;">ระบบแจ้งเตือนยาใกล้หมดอายุและคลังยา</div>
+
+      <div style="width:100%; display:flex; flex-direction:column; gap:12px;">
+        <div style="width:100%;">
+          <div style="font-size:12.5px; font-weight:600; margin-bottom:6px; color:var(--text-dim);">ชื่อผู้ใช้งาน</div>
+          <input type="text" placeholder="ชื่อผู้ใช้งาน" value="{{ loginUser }}" onChange="{{ onLoginUserChange }}" onKeyDown="{{ onLoginKeyDown }}"
+            style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
+        </div>
+        <div style="width:100%;">
+          <div style="font-size:12.5px; font-weight:600; margin-bottom:6px; color:var(--text-dim);">รหัสผ่าน</div>
+          <input type="password" placeholder="รหัสผ่าน" value="{{ loginPass }}" onChange="{{ onLoginPassChange }}" onKeyDown="{{ onLoginKeyDown }}"
+            style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
+        </div>
+
+        <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12.5px; color:#ef4444; font-weight:600;">{{ loginError }}</div>
+        </sc-if>
+
+        <button onClick="{{ doLogin }}" style="width:100%; margin-top:6px; background:var(--accent); color:white; border:none; padding:12px; border-radius:10px; font-size:14.5px; font-weight:700; cursor:pointer; font-family:inherit;">เข้าสู่ระบบ</button>
+        <div style="font-size:11.5px; color:var(--text-dim); text-align:center; margin-top:4px;">กรอก Username และ Password และเข้าใช้งาน · Version 1.0</div>
+      </div>
+    </div>
+    <div style="position:relative; margin-top:22px; font-size:11.5px; color:var(--text-dim); text-align:center;">Powered By Tanisorn Uplink Marketing Expert Co.,Ltd.</div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex; min-height:100vh; background: var(--bg); color: var(--text); font-family:'Noto Sans Thai','Inter',sans-serif; transition: background .2s, color .2s;">
+
+  <sc-if value="{{ sidebarOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSidebar }}" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:80;"></div>
+  </sc-if>
+
+  <!-- Sidebar -->
+  <div style="{{ sidebarStyle }}">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="width:64px; height:64px; border-radius:16px; background:var(--sidebar-card); border:1px solid var(--sidebar-border); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 14px rgba(0,0,0,0.18);">
+        <img src="assets/hospital-logo.png" alt="Erawan Hospital logo" style="width:52px; height:52px; object-fit:contain;" />
+      </div>
+      <div>
+        <div style="font-size:12px; color:var(--sidebar-text-dim); font-weight:600;">{{ hospitalName }}</div>
+        <div style="font-size:14px; font-weight:700; color:var(--sidebar-accent); line-height:1.4;">ระบบแจ้งเตือนยาใกล้หมดอายุ<br/>และคลังยา</div>
+      </div>
+    </div>
+
+    <div style="background:var(--sidebar-card); border:1px solid var(--sidebar-border); border-radius:12px; padding:12px 14px;">
+      <div style="font-size:10px; color:var(--sidebar-text-dim); letter-spacing:.03em;">TH เวลาประเทศไทย (UTC+7)</div>
+      <div style="font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; margin-top:2px;">{{ clockTime }}</div>
+      <div style="font-size:12px; color:var(--sidebar-text-dim); margin-top:2px;">{{ clockDate }}</div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+      <div onClick="{{ goDashboard }}" style="{{ navStyleDashboard }}">
+        <span style="font-size:16px;">📊</span> Dashboard
+      </div>
+      <div onClick="{{ goList }}" style="{{ navStyleList }}">
+        <span style="font-size:16px;">💊</span> รายการยา
+      </div>
+      <div onClick="{{ goStock }}" style="{{ navStyleStock }}">
+        <span style="font-size:16px;">📦</span> ยาคงเหลือในคลัง
+      </div>
+      <div onClick="{{ goReceiving }}" style="{{ navStyleReceiving }}">
+        <span style="font-size:16px;">📥</span> ประวัติการรับเข้ายา
+      </div>
+      <div onClick="{{ goDispensing }}" style="{{ navStyleDispensing }}">
+        <span style="font-size:16px;">📤</span> ประวัติการส่งออกยา
+      </div>
+      <sc-if value="{{ isAdminRole }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ goAdmin }}" style="{{ navStyleAdmin }}">
+          <span style="font-size:16px;">🛡️</span> ผู้ดูแลระบบ
+        </div>
+        <div onClick="{{ goSettings }}" style="{{ navStyleSettings }}">
+          <span style="font-size:16px;">⚙️</span> ตั้งค่า
+        </div>
+        <div onClick="{{ goDbConnect }}" style="{{ navStyleDbConnect }}">
+          <span style="font-size:16px;">🔗</span> ตั้งค่าการเชื่อมต่อฐานข้อมูล
+        </div>
+      </sc-if>
+    </div>
+
+    <div onClick="{{ doLogout }}" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; color:var(--sidebar-text-dim); font-size:13px; border-top:1px solid var(--sidebar-border); padding-top:16px;">
+      🔒 ออกจากระบบ
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div style="{{ mainStyle }}">
+
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px;">
+      <div style="display:flex; align-items:flex-start; gap:12px;">
+        <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ toggleSidebar }}" style="width:36px; height:36px; border-radius:10px; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:16px;">☰</div>
+        </sc-if>
+        <div>
+          <div style="font-size:24px; font-weight:800; display:flex; align-items:center; gap:10px;">
+            <span>{{ pageIcon }}</span> {{ pageTitle }}
+          </div>
+          <div style="font-size:13px; color:var(--text-dim); margin-top:4px;">{{ pageSubtitle }}</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+        <div style="position:relative;">
+          <div onClick="{{ toggleNotifMenu }}" style="position:relative; width:36px; height:36px; border-radius:10px; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer;">
+            <span style="font-size:16px;">🔔</span>
+            <sc-if value="{{ hasCritical }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:white; font-size:10px; font-weight:800; min-width:17px; height:17px; border-radius:999px; display:flex; align-items:center; justify-content:center; padding:0 4px;">{{ notifUnseenCount }}</span>
+            </sc-if>
+          </div>
+          <sc-if value="{{ notifMenuOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeNotifMenu }}" style="position:fixed; inset:0; z-index:70;"></div>
+            <div style="position:absolute; top:calc(100% + 6px); left:0; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.25); min-width:320px; max-width:360px; z-index:71; overflow:hidden;">
+
+              <div style="padding:12px 16px; font-size:13px; font-weight:700; border-bottom:1px solid var(--border); background:var(--card-2);">⏳ ยาใกล้หมดอายุ ({{ criticalCount }})</div>
+              <div style="max-height:200px; overflow-y:auto;">
+                <sc-for list="{{ notifItems }}" as="n" hint-placeholder-count="4">
+                  <div onClick="{{ n.onOpen }}" style="padding:10px 16px; border-bottom:1px solid var(--border); font-size:12.5px; cursor:pointer;">
+                    <div style="font-weight:600;">{{ n.name }}</div>
+                    <div style="color:{{ n.status.solid }}; font-size:11.5px; margin-top:2px;">{{ n.daysLabel }} · {{ n.warehouse }}</div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ noCritical }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:16px; text-align:center; color:var(--text-dim); font-size:12.5px;">ไม่มีรายการใกล้หมดอายุ</div>
+                </sc-if>
+              </div>
+              <div onClick="{{ goListFromNotif }}" style="padding:9px 16px; font-size:12px; font-weight:700; color:var(--accent); cursor:pointer; text-align:center; border-bottom:1px solid var(--border);">ดูรายการยาทั้งหมด →</div>
+
+              <div style="padding:12px 16px; font-size:13px; font-weight:700; border-bottom:1px solid var(--border); background:var(--card-2);">📦 ความเคลื่อนไหวรับเข้า/ส่งออกล่าสุด</div>
+              <div style="max-height:220px; overflow-y:auto;">
+                <sc-for list="{{ notifMovements }}" as="m" hint-placeholder-count="5">
+                  <div onClick="{{ m.onOpen }}" style="padding:10px 16px; border-bottom:1px solid var(--border); font-size:12.5px; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                    <span style="{{ m.badgeStyle }}">{{ m.typeLabel }}</span>
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ m.name }}</div>
+                      <div style="color:var(--text-dim); font-size:11.5px;">{{ m.dateLabel }} {{ m.time }} · {{ m.qtyLabel }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ noMovements }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:16px; text-align:center; color:var(--text-dim); font-size:12.5px;">ยังไม่มีความเคลื่อนไหว</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="position:relative;">
+          <div onClick="{{ toggleUserMenu }}" style="font-size:12px; color:var(--text-dim); background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:10px; display:flex; align-items:center; gap:6px; white-space:nowrap; cursor:pointer;">
+            <span>👤</span> {{ loggedInName }} <span style="{{ roleBadgeStyle }}">{{ roleLabel }}</span> <span style="font-size:10px; color:var(--text-dim);">▾</span>
+          </div>
+          <sc-if value="{{ userMenuOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeUserMenu }}" style="position:fixed; inset:0; z-index:70;"></div>
+            <div style="position:absolute; top:calc(100% + 6px); right:0; background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,0.25); min-width:170px; z-index:71; overflow:hidden;">
+              <div style="padding:10px 14px; font-size:12px; color:var(--text-dim); border-bottom:1px solid var(--border);">{{ loggedInName }}</div>
+              <div onClick="{{ doLogout }}" style="padding:11px 14px; font-size:13px; font-weight:600; color:#ef4444; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                🔒 ออกจากระบบ
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="font-size:12px; color:var(--text-dim); background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:10px; white-space:nowrap;">
+          🏥 {{ hospitalName }}
+        </div>
+        <div onClick="{{ toggleTheme }}" style="{{ themeToggleStyle }}">
+          <span>{{ themeToggleIcon }}</span> {{ themeToggleLabel }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== DASHBOARD PAGE ===================== -->
+    <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; flex-direction:column; gap:20px;">
+
+        <div style="display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 18px; font-size:13px;">
+          <span style="width:9px; height:9px; border-radius:50%; background:{{ dbDotColor }}; box-shadow:0 0 0 4px rgba(34,197,94,0.15); flex-shrink:0;"></span>
+          <span style="font-weight:600;">{{ dbStatusLabel }}</span>
+          <span style="color:var(--text-dim);">·</span>
+          <span style="color:var(--text-dim);">📡 ส่งล่าสุด: {{ lastSyncLabel }}</span>
+        </div>
+
+        <div style="{{ summaryGridStyle }}">
+          <sc-for list="{{ summaryCards }}" as="card" hint-placeholder-count="6">
+            <div onClick="{{ card.onClick }}" style="background:var(--card); border:1px solid var(--border); border-top:3px solid {{ card.color }}; border-radius:14px; padding:16px 18px; min-width:0; cursor:pointer;">
+              <div style="font-size:30px; font-weight:800; color:{{ card.color }}; font-variant-numeric:tabular-nums;">{{ card.value }}</div>
+              <div style="font-size:12.5px; font-weight:600; margin-top:6px;">{{ card.label }}</div>
+              <div style="font-size:11.5px; color:{{ card.color }}; margin-top:3px; font-weight:600;">{{ card.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div onClick="{{ goListAll }}" style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; cursor:pointer;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div style="width:44px; height:44px; border-radius:12px; background:var(--card-2); display:flex; align-items:center; justify-content:center; font-size:20px;">🏬</div>
+            <div>
+              <div style="font-size:26px; font-weight:800; font-variant-numeric:tabular-nums;">{{ counts.totalItems }}</div>
+              <div style="font-size:12.5px; color:var(--text-dim);">รายการยาในคลังทั้งหมด · หมดอายุแล้ว/วันนี้: <span style="color:#ef4444; font-weight:700;">{{ counts.expired }}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="{{ chartsGridStyle }}">
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px 20px;">
+            <div style="font-weight:700; font-size:14.5px; margin-bottom:14px;">📈 ปริมาณการใช้ยา (ส่งออกจากคลัง) ย้อนหลัง 6 เดือน</div>
+            <div style="display:flex; align-items:flex-end; gap:14px; height:150px; padding:0 4px;">
+              <sc-for list="{{ usageBars }}" as="bar" hint-placeholder-count="6">
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end;">
+                  <div style="font-size:12px; font-weight:700; color:var(--text);">{{ bar.value }}</div>
+                  <div style="width:100%; max-width:36px; height:{{ bar.heightPct }}%; background:linear-gradient(180deg, var(--accent-2), var(--accent)); border-radius:6px 6px 2px 2px; min-height:4px;"></div>
+                  <div style="font-size:11.5px; color:var(--text-dim);">{{ bar.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px 20px; display:flex; flex-direction:column;">
+            <div style="font-weight:700; font-size:14.5px; margin-bottom:14px;">🥧 สัดส่วนยาคงเหลือในคลัง</div>
+            <div style="display:flex; align-items:center; gap:18px;">
+              <div style="width:130px; height:130px; border-radius:50%; background:{{ pieGradient }}; flex-shrink:0; box-shadow:inset 0 0 0 1px var(--border);"></div>
+              <div style="display:flex; flex-direction:column; gap:7px; min-width:0; flex:1;">
+                <sc-for list="{{ pieLegend }}" as="seg" hint-placeholder-count="7">
+                  <div style="display:flex; align-items:center; gap:7px; font-size:12px;">
+                    <span style="width:9px; height:9px; border-radius:3px; background:{{ seg.color }}; flex-shrink:0;"></span>
+                    <span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ seg.label }}</span>
+                    <span style="color:var(--text-dim); font-variant-numeric:tabular-nums;">{{ seg.qty }} · {{ seg.pct }}%</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div onClick="{{ goStock }}" style="margin-top:14px; text-align:right; font-size:12.5px; color:var(--accent); font-weight:700; cursor:pointer;">ดูทั้งหมดเพิ่มเติม →</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button onClick="{{ sendLine }}" style="display:flex; align-items:center; gap:8px; background:#16a34a; color:white; border:none; padding:12px 18px; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;">💬 ส่ง LINE ทันที</button>
+          <button onClick="{{ openPreview }}" style="display:flex; align-items:center; gap:8px; background:var(--accent); color:white; border:none; padding:12px 18px; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;">👁 ดูตัวอย่างข้อความ</button>
+          <button onClick="{{ refreshData }}" style="display:flex; align-items:center; gap:8px; background:var(--card); color:var(--text); border:1px solid var(--border); padding:12px 18px; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;">
+            <span style="{{ refreshSpinStyle }}">🔄</span> รีเฟรชข้อมูล
+          </button>
+          <div onClick="{{ toggleAutoSend }}" style="{{ autoSendPillStyle }}">
+            <span>{{ autoSendIcon }}</span> ส่งอัตโนมัติทุกวัน 07:00 น. — {{ autoSendStatusLabel }}
+          </div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border);">
+            <div style="font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:8px;">
+              <span style="width:9px; height:9px; border-radius:50%; background:#ef4444; display:inline-block;"></span>
+              รายการวิกฤต — หมดอายุแล้ว / ≤30 วัน (top 10)
+            </div>
+            <div onClick="{{ goList }}" style="font-size:13px; color:var(--accent); font-weight:700; cursor:pointer;">ดูทั้งหมด →</div>
+          </div>
+          <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+            <thead>
+              <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
+                <th style="padding:10px 20px; font-weight:600;">#</th>
+                <th style="padding:10px; font-weight:600;">คลัง</th>
+                <th style="padding:10px; font-weight:600;">ชื่อยา</th>
+                <th style="padding:10px; font-weight:600;">วันหมดอายุ</th>
+                <th style="padding:10px; font-weight:600;">คงเหลือ</th>
+                <th style="padding:10px 20px; font-weight:600;">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ criticalTop10 }}" as="row" hint-placeholder-count="6">
+                <tr onClick="{{ row.onOpenDetail }}" style="border-top:1px solid var(--border); cursor:pointer;">
+                  <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
+                  <td style="padding:12px 10px;"><span style="background:var(--card-2); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:600;">{{ row.warehouse }}</span></td>
+                  <td style="padding:12px 10px;">
+                    <div style="font-weight:600;">{{ row.name }}</div>
+                    <div style="font-size:11.5px; color:var(--text-dim);">{{ row.lot }}</div>
+                  </td>
+                  <td style="padding:12px 10px;">
+                    <div>{{ row.expiryLabel }}</div>
+                    <div style="font-size:11.5px; color:{{ row.status.solid }}; font-weight:700;">{{ row.daysLabel }}</div>
+                  </td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ row.qty }} {{ row.unit }}</td>
+                  <td style="padding:12px 20px;">
+                    <span style="background:{{ row.status.bg }}; color:{{ row.status.solid }}; border:1px solid {{ row.status.solid }}; padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:700;">{{ row.status.label }}</span>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== LIST PAGE ===================== -->
+    <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <input type="text" placeholder="ค้นหาชื่อยา รหัสยา หรือ เลขล็อต..." value="{{ search }}" onChange="{{ onSearchChange }}"
+            style="flex:1; min-width:220px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
+
+          <select value="{{ warehouseFilter }}" onChange="{{ onWarehouseChange }}" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:10px; font-size:13.5px; font-family:inherit; cursor:pointer;">
+            <sc-for list="{{ warehouseOptions }}" as="opt" hint-placeholder-count="5">
+              <option value="{{ opt.value }}">{{ opt.label }}</option>
+            </sc-for>
+          </select>
+
+          <select value="{{ statusFilter }}" onChange="{{ onStatusChange }}" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:10px; font-size:13.5px; font-family:inherit; cursor:pointer;">
+            <sc-for list="{{ statusOptions }}" as="opt" hint-placeholder-count="6">
+              <option value="{{ opt.value }}">{{ opt.label }}</option>
+            </sc-for>
+          </select>
+
+          <div style="font-size:12.5px; color:var(--text-dim); white-space:nowrap; padding-left:4px;">พบ {{ filteredCount }} รายการ</div>
+        </div>
+
+        <sc-if value="{{ daysMaxFilterLabel }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:8px; width:fit-content; background:rgba(59,130,246,0.12); border:1px solid var(--accent); color:var(--accent); padding:7px 12px; border-radius:999px; font-size:12.5px; font-weight:700;">
+            🔎 {{ daysMaxFilterLabel }}
+            <span onClick="{{ clearDaysMaxFilter }}" style="cursor:pointer; font-weight:800;">✕</span>
+          </div>
+        </sc-if>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
+          <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+            <thead>
+              <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
+                <th style="padding:12px 20px; font-weight:600;">#</th>
+                <th style="padding:12px 10px; font-weight:600;">รหัสยา</th>
+                <th onClick="{{ sortByWarehouse }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">คลัง {{ sortArrows.warehouse }}</th>
+                <th onClick="{{ sortByName }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">ชื่อยา {{ sortArrows.name }}</th>
+                <th onClick="{{ sortByExpiry }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">วันหมดอายุ {{ sortArrows.expiry }}</th>
+                <th onClick="{{ sortByQty }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">คงเหลือ {{ sortArrows.qty }}</th>
+                <th style="padding:12px 20px; font-weight:600;">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ pagedRows }}" as="row" hint-placeholder-count="10">
+                <tr onClick="{{ row.onOpenDetail }}" style="border-top:1px solid var(--border); cursor:pointer;">
+                  <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.code }}</td>
+                  <td style="padding:12px 10px;"><span style="background:var(--card-2); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:600;">{{ row.warehouse }}</span></td>
+                  <td style="padding:12px 10px;">
+                    <div style="font-weight:600;">{{ row.name }}</div>
+                    <div style="font-size:11.5px; color:var(--text-dim);">{{ row.lot }}</div>
+                  </td>
+                  <td style="padding:12px 10px;">
+                    <div>{{ row.expiryLabel }}</div>
+                    <div style="font-size:11.5px; color:{{ row.status.solid }}; font-weight:700;">{{ row.daysLabel }}</div>
+                  </td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ row.qty }} {{ row.unit }}</td>
+                  <td style="padding:12px 20px;">
+                    <span style="background:{{ row.status.bg }}; color:{{ row.status.solid }}; border:1px solid {{ row.status.solid }}; padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:700;">{{ row.status.label }}</span>
+                  </td>
+                </tr>
+              </sc-for>
+              <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+                <tr><td colspan="6" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
+              </sc-if>
+            </tbody>
+          </table>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
+            <div style="color:var(--text-dim);">หน้า {{ currentPage }} จาก {{ totalPages }}</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ prevPage }}" style="{{ pagerBtnStyle }}">← ก่อนหน้า</button>
+              <button onClick="{{ nextPage }}" style="{{ pagerBtnStyle }}">ถัดไป →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== RECEIVING HISTORY PAGE ===================== -->
+    <sc-if value="{{ isReceiving }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <input type="text" placeholder="ค้นหาชื่อยา ผู้รับเข้า Lot หรือ แหล่งที่มา..." value="{{ recSearch }}" onChange="{{ onRecSearchChange }}"
+            style="flex:1; min-width:220px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
+          <div style="font-size:12.5px; color:var(--text-dim); white-space:nowrap; padding-left:4px;">พบ {{ recFilteredCount }} รายการ</div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
+          <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+            <thead>
+              <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
+                <th style="padding:12px 20px; font-weight:600;">#</th>
+                <th onClick="{{ recSortByDate }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">วันที่รับเข้า {{ recSortArrows.date }}</th>
+                <th style="padding:12px 10px; font-weight:600;">เวลา</th>
+                <th onClick="{{ recSortByName }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">ชื่อยา {{ recSortArrows.name }}</th>
+                <th style="padding:12px 10px; font-weight:600;">Lot เลขที่</th>
+                <th onClick="{{ recSortByQty }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">จำนวนรับเข้า {{ recSortArrows.qty }}</th>
+                <th style="padding:12px 10px; font-weight:600;">ผู้รับเข้า</th>
+                <th style="padding:12px 20px; font-weight:600;">รับเข้าจาก</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ recPagedRows }}" as="row" hint-placeholder-count="10">
+                <tr style="border-top:1px solid var(--border);">
+                  <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ row.dateLabel }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.time }}</td>
+                  <td style="padding:12px 10px; font-weight:600;">{{ row.name }}</td>
+                  <td style="padding:12px 10px; color:var(--text-dim); font-variant-numeric:tabular-nums;">{{ row.lot }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:#16a34a; font-weight:700;">+{{ row.qty }} {{ row.unit }}</td>
+                  <td style="padding:12px 10px;">{{ row.person }}</td>
+                  <td style="padding:12px 20px;"><span style="background:var(--card-2); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:600;">{{ row.place }}</span></td>
+                </tr>
+              </sc-for>
+              <sc-if value="{{ recNoResults }}" hint-placeholder-val="{{ false }}">
+                <tr><td colspan="8" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
+              </sc-if>
+            </tbody>
+          </table>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
+            <div style="color:var(--text-dim);">หน้า {{ recCurrentPage }} จาก {{ recTotalPages }}</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ recPrevPage }}" style="{{ pagerBtnStyle }}">← ก่อนหน้า</button>
+              <button onClick="{{ recNextPage }}" style="{{ pagerBtnStyle }}">ถัดไป →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== DISPENSING HISTORY PAGE ===================== -->
+    <sc-if value="{{ isDispensing }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <input type="text" placeholder="ค้นหาชื่อยา ผู้ส่งออก Lot หรือ ปลายทาง..." value="{{ dispSearch }}" onChange="{{ onDispSearchChange }}"
+            style="flex:1; min-width:220px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
+          <div style="font-size:12.5px; color:var(--text-dim); white-space:nowrap; padding-left:4px;">พบ {{ dispFilteredCount }} รายการ</div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
+          <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+            <thead>
+              <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
+                <th style="padding:12px 20px; font-weight:600;">#</th>
+                <th onClick="{{ dispSortByDate }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">วันที่ส่งออก {{ dispSortArrows.date }}</th>
+                <th style="padding:12px 10px; font-weight:600;">เวลา</th>
+                <th onClick="{{ dispSortByName }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">ชื่อยา {{ dispSortArrows.name }}</th>
+                <th style="padding:12px 10px; font-weight:600;">Lot เลขที่</th>
+                <th onClick="{{ dispSortByQty }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">จำนวนส่งออก {{ dispSortArrows.qty }}</th>
+                <th style="padding:12px 10px; font-weight:600;">ผู้ส่งออก</th>
+                <th style="padding:12px 20px; font-weight:600;">ส่งออกไปที่</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ dispPagedRows }}" as="row" hint-placeholder-count="10">
+                <tr style="border-top:1px solid var(--border);">
+                  <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ row.dateLabel }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.time }}</td>
+                  <td style="padding:12px 10px; font-weight:600;">{{ row.name }}</td>
+                  <td style="padding:12px 10px; color:var(--text-dim); font-variant-numeric:tabular-nums;">{{ row.lot }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:#ef4444; font-weight:700;">-{{ row.qty }} {{ row.unit }}</td>
+                  <td style="padding:12px 10px;">{{ row.person }}</td>
+                  <td style="padding:12px 20px;"><span style="background:var(--card-2); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:600;">{{ row.place }}</span></td>
+                </tr>
+              </sc-for>
+              <sc-if value="{{ dispNoResults }}" hint-placeholder-val="{{ false }}">
+                <tr><td colspan="8" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
+              </sc-if>
+            </tbody>
+          </table>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
+            <div style="color:var(--text-dim);">หน้า {{ dispCurrentPage }} จาก {{ dispTotalPages }}</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ dispPrevPage }}" style="{{ pagerBtnStyle }}">← ก่อนหน้า</button>
+              <button onClick="{{ dispNextPage }}" style="{{ pagerBtnStyle }}">ถัดไป →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== STOCK BREAKDOWN PAGE ===================== -->
+    <sc-if value="{{ isStock }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div onClick="{{ goDashboard }}" style="font-size:13px; color:var(--accent); font-weight:700; cursor:pointer; width:fit-content;">← กลับ Dashboard</div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <input type="text" placeholder="ค้นหาชื่อยา..." value="{{ stockSearch }}" onChange="{{ onStockSearchChange }}"
+            style="flex:1; min-width:220px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
+
+          <select value="{{ stockWarehouseFilter }}" onChange="{{ onStockWarehouseChange }}" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:10px; font-size:13.5px; font-family:inherit; cursor:pointer;">
+            <sc-for list="{{ warehouseOptions }}" as="opt" hint-placeholder-count="4">
+              <option value="{{ opt.value }}">{{ opt.label }}</option>
+            </sc-for>
+          </select>
+
+          <div style="font-size:12.5px; color:var(--text-dim); white-space:nowrap; padding-left:4px;">พบ {{ stockFilteredCount }} รายการยา</div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
+          <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+            <thead>
+              <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
+                <th style="padding:12px 20px; font-weight:600;">#</th>
+                <th onClick="{{ stockSortByName }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">ชื่อยา {{ stockSortArrows.name }}</th>
+                <th onClick="{{ stockSortByQty }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">คงเหลือรวม {{ stockSortArrows.qty }}</th>
+                <th style="padding:12px 10px; font-weight:600;">สัดส่วน</th>
+                <th style="padding:12px 20px; font-weight:600;">คลังที่มีสต็อก</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ stockPagedRows }}" as="row" hint-placeholder-count="10">
+                <tr onClick="{{ row.onOpenDetail }}" style="border-top:1px solid var(--border); cursor:pointer;">
+                  <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
+                  <td style="padding:12px 10px; font-weight:600;">{{ row.name }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ row.qty }} {{ row.unit }}</td>
+                  <td style="padding:12px 10px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <div style="width:70px; height:6px; border-radius:3px; background:var(--card-2); overflow:hidden; flex-shrink:0;">
+                        <div style="height:100%; width:{{ row.barPct }}%; background:var(--accent); border-radius:3px;"></div>
+                      </div>
+                      <span style="color:var(--text-dim); font-variant-numeric:tabular-nums;">{{ row.pct }}%</span>
+                    </div>
+                  </td>
+                  <td style="padding:12px 20px;">{{ row.warehousesLabel }}</td>
+                </tr>
+              </sc-for>
+              <sc-if value="{{ stockNoResults }}" hint-placeholder-val="{{ false }}">
+                <tr><td colspan="5" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
+              </sc-if>
+            </tbody>
+          </table>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
+            <div style="color:var(--text-dim);">หน้า {{ stockCurrentPage }} จาก {{ stockTotalPages }}</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ stockPrevPage }}" style="{{ pagerBtnStyle }}">← ก่อนหน้า</button>
+              <button onClick="{{ stockNextPage }}" style="{{ pagerBtnStyle }}">ถัดไป →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== ADMIN PAGE ===================== -->
+    <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px;">
+          <div style="font-weight:700; font-size:14.5px; margin-bottom:14px;">➕ สร้างบัญชีผู้ใช้งานใหม่</div>
+          <div style="{{ newUserFormGridStyle }}">
+            <div>
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">ชื่อ-นามสกุล</div>
+              <input type="text" placeholder="ชื่อ-นามสกุล" value="{{ newUserName }}" onChange="{{ onNewUserNameChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13px; font-family:inherit;" />
+            </div>
+            <div>
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">ชื่อผู้ใช้งาน</div>
+              <input type="text" placeholder="username" value="{{ newUserUsername }}" onChange="{{ onNewUserUsernameChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13px; font-family:inherit;" />
+            </div>
+            <div>
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">รหัสผ่าน</div>
+              <input type="text" placeholder="รหัสผ่าน" value="{{ newUserPassword }}" onChange="{{ onNewUserPasswordChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13px; font-family:inherit;" />
+            </div>
+            <div>
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">สิทธิ์การใช้งาน</div>
+              <select value="{{ newUserRole }}" onChange="{{ onNewUserRoleChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13px; font-family:inherit; cursor:pointer;">
+                <option value="staff">เจ้าหน้าที่</option>
+                <option value="admin">ผู้ดูแลระบบ</option>
+              </select>
+            </div>
+            <button onClick="{{ createUser }}" style="background:var(--accent); color:white; border:none; padding:10px 18px; border-radius:8px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap;">สร้างบัญชี</button>
+          </div>
+          <sc-if value="{{ newUserError }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12.5px; color:#ef4444; font-weight:600; margin-top:10px;">{{ newUserError }}</div>
+          </sc-if>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
+          <div style="padding:16px 20px; border-bottom:1px solid var(--border); font-weight:700; font-size:14.5px;">👥 บัญชีผู้ใช้งานทั้งหมด ({{ userCount }})</div>
+          <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+            <thead>
+              <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
+                <th style="padding:12px 20px; font-weight:600;">#</th>
+                <th style="padding:12px 10px; font-weight:600;">ชื่อ-นามสกุล</th>
+                <th style="padding:12px 10px; font-weight:600;">ชื่อผู้ใช้งาน</th>
+                <th style="padding:12px 10px; font-weight:600;">สิทธิ์</th>
+                <th style="padding:12px 20px; font-weight:600;">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ userRows }}" as="u" hint-placeholder-count="4">
+                <tr style="border-top:1px solid var(--border);">
+                  <td style="padding:12px 20px; color:var(--text-dim);">{{ u.idx }}</td>
+                  <td style="padding:12px 10px; font-weight:600;">{{ u.name }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ u.username }}</td>
+                  <td style="padding:12px 10px;"><span style="{{ u.roleBadgeStyle }}">{{ u.roleLabel }}</span></td>
+                  <td style="padding:12px 20px; display:flex; gap:12px;">
+                    <span onClick="{{ u.onEdit }}" style="color:var(--accent); font-weight:600; cursor:pointer; font-size:12.5px;">แก้ไข</span>
+                    <span onClick="{{ u.onDelete }}" style="color:#ef4444; font-weight:600; cursor:pointer; font-size:12.5px;">ลบ</span>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          </div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
+          <div style="padding:16px 20px; border-bottom:1px solid var(--border); font-weight:700; font-size:14.5px;">🧾 ประวัติการใช้งานระบบ (Audit Log)</div>
+          <div style="overflow-x:auto; max-height:320px;">
+          <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+              <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
+                <th style="padding:10px 20px; font-weight:600;">เวลา</th>
+                <th style="padding:10px; font-weight:600;">ผู้ดำเนินการ</th>
+                <th style="padding:10px 20px; font-weight:600;">รายการ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ auditRows }}" as="a" hint-placeholder-count="4">
+                <tr style="border-top:1px solid var(--border);">
+                  <td style="padding:10px 20px; color:var(--text-dim); white-space:nowrap; font-variant-numeric:tabular-nums;">{{ a.time }}</td>
+                  <td style="padding:10px; white-space:nowrap;">{{ a.actor }}</td>
+                  <td style="padding:10px 20px;">{{ a.action }}</td>
+                </tr>
+              </sc-for>
+              <sc-if value="{{ auditEmpty }}" hint-placeholder-val="{{ false }}">
+                <tr><td colspan="3" style="padding:30px; text-align:center; color:var(--text-dim);">ยังไม่มีประวัติการใช้งาน</td></tr>
+              </sc-if>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== DRUG DETAIL PAGE ===================== -->
+    <sc-if value="{{ isDrugDetail }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div onClick="{{ goBackFromDetail }}" style="font-size:13px; color:var(--accent); font-weight:700; cursor:pointer; width:fit-content;">← กลับ</div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div style="font-size:19px; font-weight:800;">{{ detailDrug.name }}</div>
+            <div style="font-size:12.5px; color:var(--text-dim); margin-top:4px;">คงเหลือรวมทุกคลัง: {{ detailDrug.qty }} {{ detailDrug.unit }} · {{ detailDrug.warehousesLabel }}</div>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <div style="background:var(--card-2); border:1px solid var(--border); border-radius:10px; padding:10px 16px; text-align:center;">
+              <div style="font-size:20px; font-weight:800; color:#16a34a;">{{ detailDrug.totalIn }}</div>
+              <div style="font-size:11px; color:var(--text-dim);">รับเข้าสะสม</div>
+            </div>
+            <div style="background:var(--card-2); border:1px solid var(--border); border-radius:10px; padding:10px 16px; text-align:center;">
+              <div style="font-size:20px; font-weight:800; color:#ef4444;">{{ detailDrug.totalOut }}</div>
+              <div style="font-size:11px; color:var(--text-dim);">ส่งออกสะสม</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
+          <div style="padding:16px 20px; border-bottom:1px solid var(--border); font-weight:700; font-size:14.5px;">📥 ประวัติการรับเข้า</div>
+          <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+            <thead>
+              <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
+                <th style="padding:10px 20px; font-weight:600;">วันที่</th>
+                <th style="padding:10px; font-weight:600;">เวลา</th>
+                <th style="padding:10px; font-weight:600;">Lot เลขที่</th>
+                <th style="padding:10px; font-weight:600;">จำนวน</th>
+                <th style="padding:10px; font-weight:600;">ผู้รับเข้า</th>
+                <th style="padding:10px 20px; font-weight:600;">รับเข้าจาก</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ detailReceiving }}" as="row" hint-placeholder-count="4">
+                <tr style="border-top:1px solid var(--border);">
+                  <td style="padding:11px 20px; font-variant-numeric:tabular-nums;">{{ row.dateLabel }}</td>
+                  <td style="padding:11px 10px; color:var(--text-dim);">{{ row.time }}</td>
+                  <td style="padding:11px 10px; color:var(--text-dim);">{{ row.lot }}</td>
+                  <td style="padding:11px 10px; color:#16a34a; font-weight:700;">+{{ row.qty }} {{ row.unit }}</td>
+                  <td style="padding:11px 10px;">{{ row.person }}</td>
+                  <td style="padding:11px 20px;">{{ row.place }}</td>
+                </tr>
+              </sc-for>
+              <sc-if value="{{ detailReceivingEmpty }}" hint-placeholder-val="{{ false }}">
+                <tr><td colspan="6" style="padding:30px; text-align:center; color:var(--text-dim);">ไม่มีประวัติการรับเข้า</td></tr>
+              </sc-if>
+            </tbody>
+          </table>
+          </div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
+          <div style="padding:16px 20px; border-bottom:1px solid var(--border); font-weight:700; font-size:14.5px;">📤 ประวัติการส่งออก</div>
+          <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+            <thead>
+              <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
+                <th style="padding:10px 20px; font-weight:600;">วันที่</th>
+                <th style="padding:10px; font-weight:600;">เวลา</th>
+                <th style="padding:10px; font-weight:600;">Lot เลขที่</th>
+                <th style="padding:10px; font-weight:600;">จำนวน</th>
+                <th style="padding:10px; font-weight:600;">ผู้ส่งออก</th>
+                <th style="padding:10px 20px; font-weight:600;">ส่งออกไปที่</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ detailDispensing }}" as="row" hint-placeholder-count="4">
+                <tr style="border-top:1px solid var(--border);">
+                  <td style="padding:11px 20px; font-variant-numeric:tabular-nums;">{{ row.dateLabel }}</td>
+                  <td style="padding:11px 10px; color:var(--text-dim);">{{ row.time }}</td>
+                  <td style="padding:11px 10px; color:var(--text-dim);">{{ row.lot }}</td>
+                  <td style="padding:11px 10px; color:#ef4444; font-weight:700;">-{{ row.qty }} {{ row.unit }}</td>
+                  <td style="padding:11px 10px;">{{ row.person }}</td>
+                  <td style="padding:11px 20px;">{{ row.place }}</td>
+                </tr>
+              </sc-for>
+              <sc-if value="{{ detailDispensingEmpty }}" hint-placeholder-val="{{ false }}">
+                <tr><td colspan="6" style="padding:30px; text-align:center; color:var(--text-dim);">ไม่มีประวัติการส่งออก</td></tr>
+              </sc-if>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== SETTINGS PAGE (admin only) ===================== -->
+    <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px;">
+          <div style="font-weight:700; font-size:14.5px; margin-bottom:4px;">⏱️ เกณฑ์การแจ้งเตือนยาใกล้หมดอายุ (วัน)</div>
+          <div style="font-size:12.5px; color:var(--text-dim); margin-bottom:16px;">ปรับจำนวนวันที่ใช้แบ่งกลุ่มสถานะยาบน Dashboard และรายงาน LINE</div>
+          <div style="{{ thresholdGridStyle }}">
+            <div>
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">เตือนด่วน (≤ วัน)</div>
+              <input type="number" value="{{ thresholds.d30 }}" onChange="{{ onThresholdD30Change }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+            </div>
+            <div>
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">เฝ้าระวัง (≤ วัน)</div>
+              <input type="number" value="{{ thresholds.d90 }}" onChange="{{ onThresholdD90Change }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+            </div>
+            <div>
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">เตรียมคืนยา (≤ วัน)</div>
+              <input type="number" value="{{ thresholds.d180 }}" onChange="{{ onThresholdD180Change }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+            </div>
+            <div>
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">เตรียมคืน/เปลี่ยน (≤ วัน)</div>
+              <input type="number" value="{{ thresholds.d365 }}" onChange="{{ onThresholdD365Change }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+            </div>
+          </div>
+          <button onClick="{{ saveThresholds }}" style="margin-top:16px; background:var(--accent); color:white; border:none; padding:11px 20px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;">บันทึกเกณฑ์การแจ้งเตือน</button>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:48px 20px; text-align:center; color:var(--text-dim);">
+          <div style="font-size:32px; margin-bottom:10px;">🗂️</div>
+          <div style="font-size:13.5px;">ยังไม่มีการตั้งค่าเพิ่มเติมในขณะนี้</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===================== DB CONNECT PAGE (admin only) ===================== -->
+    <sc-if value="{{ isDbConnect }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:20px;">
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 22px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div style="width:48px; height:48px; border-radius:12px; background:var(--card-2); display:flex; align-items:center; justify-content:center; font-size:22px;">📊</div>
+            <div>
+              <div style="font-weight:700; font-size:15px;">Google Sheets Connector</div>
+              <div style="font-size:12.5px; color:var(--text-dim); margin-top:2px;">ดึง/ซิงก์ข้อมูลคลังยาจาก Google Sheet ของโรงพยาบาลโดยตรง</div>
+            </div>
+          </div>
+          <div style="{{ sheetStatusPillStyle }}">
+            <span style="width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0;"></span>
+            {{ sheetStatusLabel }}
+          </div>
+        </div>
+
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 22px; display:flex; flex-direction:column; gap:14px;">
+          <div style="font-weight:700; font-size:14.5px;">1. ระบุ Google Sheet ที่ต้องการเชื่อมต่อ</div>
+
+          <div>
+            <div style="font-size:12px; color:var(--text-dim); margin-bottom:6px;">ลิงก์ Google Sheet</div>
+            <input type="text" placeholder="https://docs.google.com/spreadsheets/d/..." value="{{ sheetUrl }}" onChange="{{ onSheetUrlChange }}" disabled="{{ sheetConnected }}"
+              style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:6px;">ชื่อชีต (Tab)</div>
+              <input type="text" placeholder="เช่น คลังยา" value="{{ sheetTabName }}" onChange="{{ onSheetTabChange }}" disabled="{{ sheetConnected }}"
+                style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
+            </div>
+            <div>
+              <div style="font-size:12px; color:var(--text-dim); margin-bottom:6px;">ความถี่ในการซิงก์</div>
+              <select value="{{ syncInterval }}" onChange="{{ onSyncIntervalChange }}" disabled="{{ sheetConnected }}"
+                style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:10px; font-size:13.5px; font-family:inherit; cursor:pointer;">
+                <option value="realtime">Realtime (ทันทีที่ข้อมูลเปลี่ยน)</option>
+                <option value="5min">ทุก 5 นาที</option>
+                <option value="1hr">ทุก 1 ชั่วโมง</option>
+                <option value="manual">ซิงก์ด้วยตนเองเท่านั้น</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="font-size:12px; color:var(--text-dim); background:var(--card-2); border:1px solid var(--border); border-radius:10px; padding:10px 14px;">
+            💡 ต้องแชร์สิทธิ์ "ผู้ดู" ให้บัญชีบริการของระบบ (service account) ในชีตดังกล่าวก่อนเชื่อมต่อ
+          </div>
+
+          <sc-if value="{{ sheetError }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12.5px; color:#ef4444; font-weight:600;">{{ sheetError }}</div>
+          </sc-if>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <sc-if value="{{ sheetConnected }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ testSheetConnection }}" style="background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:11px 18px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:8px;">
+                <span style="{{ sheetTestSpinStyle }}">🔄</span> ทดสอบการเชื่อมต่อ
+              </button>
+              <button onClick="{{ disconnectSheet }}" style="background:rgba(239,68,68,0.12); border:1px solid #ef4444; color:#ef4444; padding:11px 18px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;">ยกเลิกการเชื่อมต่อ</button>
+            </sc-if>
+            <sc-if value="{{ sheetNotConnected }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ connectSheet }}" style="{{ connectBtnStyle }}">
+                <span style="{{ sheetConnectingSpinStyle }}">🔄</span> {{ connectBtnLabel }}
+              </button>
+            </sc-if>
+          </div>
+        </div>
+
+        <sc-if value="{{ sheetConnected }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px 22px; display:flex; flex-direction:column; gap:12px;">
+            <div style="font-weight:700; font-size:14.5px;">2. สถานะการเชื่อมต่อ</div>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+              <div style="background:var(--card-2); border:1px solid var(--border); border-radius:10px; padding:12px 14px;">
+                <div style="font-size:11px; color:var(--text-dim);">ชีตที่เชื่อมต่อ</div>
+                <div style="font-size:13px; font-weight:700; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ sheetTabName }}</div>
+              </div>
+              <div style="background:var(--card-2); border:1px solid var(--border); border-radius:10px; padding:12px 14px;">
+                <div style="font-size:11px; color:var(--text-dim);">ความถี่ในการซิงก์</div>
+                <div style="font-size:13px; font-weight:700; margin-top:4px;">{{ syncIntervalLabel }}</div>
+              </div>
+              <div style="background:var(--card-2); border:1px solid var(--border); border-radius:10px; padding:12px 14px;">
+                <div style="font-size:11px; color:var(--text-dim);">ซิงก์ล่าสุด</div>
+                <div style="font-size:13px; font-weight:700; margin-top:4px;">{{ sheetLastSyncLabel }}</div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <div style="text-align:center; font-size:11.5px; color:var(--text-dim); padding-top:12px;">Powered By Tanisorn Uplink Marketing Expert Co.,Ltd.</div>
+  </div>
+
+  <!-- Toast -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; bottom:26px; right:26px; background:#111a2e; color:#e7edf7; border:1px solid #22314f; padding:14px 20px; border-radius:12px; font-size:13.5px; font-weight:600; box-shadow:0 12px 30px rgba(0,0,0,0.35); animation: fadeIn .2s ease; z-index:50; display:flex; align-items:center; gap:8px;">
+      ✅ {{ toast }}
+    </div>
+  </sc-if>
+
+  <!-- Preview Modal -->
+  <sc-if value="{{ previewOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closePreview }}" style="position:fixed; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:60; padding:20px;">
+      <div onClick="{{ stopClick }}" style="background:var(--card); color:var(--text); border-radius:16px; padding:24px; width:460px; max-width:100%; max-height:86vh; display:flex; flex-direction:column; border:1px solid var(--border);">
+        <div style="font-weight:800; font-size:16px; margin-bottom:14px; display:flex; align-items:center; gap:8px; flex-shrink:0;">👁 ตัวอย่างข้อความ LINE</div>
+        <div style="background:#111a2e; color:#e7edf7; border-radius:12px; padding:18px; font-size:13px; line-height:1.7; overflow-y:auto;">
+          <div style="font-weight:700; margin-bottom:2px;">🏥 {{ hospitalName }}</div>
+          <div>📋 รายงานยาใกล้หมดอายุ</div>
+          <div style="color:#94a3b8; margin-bottom:10px;">📅 วันที่ {{ previewDateLabel }}</div>
+          <div style="border-top:1px solid #22314f; margin:10px 0;"></div>
+          <div style="font-weight:700; margin-bottom:6px;">📊 สรุป (ช่วง 365 วัน)</div>
+          <sc-for list="{{ previewSummary }}" as="row" hint-placeholder-count="5">
+            <div style="display:flex; align-items:center; gap:7px; margin-bottom:4px;">
+              <span style="width:8px; height:8px; border-radius:50%; background:{{ row.color }}; flex-shrink:0;"></span>
+              <span>{{ row.label }}: {{ row.count }} รายการ</span>
+            </div>
+          </sc-for>
+          <div style="border-top:1px solid #22314f; margin:12px 0;"></div>
+          <div style="font-weight:700; margin-bottom:8px;">🚨 ต้องดำเนินการด่วน (≤30 วัน)</div>
+          <sc-for list="{{ previewUrgent }}" as="item" hint-placeholder-count="5">
+            <div style="margin-bottom:10px;">
+              <div>• {{ item.name }}</div>
+              <div style="color:#94a3b8; padding-left:12px;">Lot: {{ item.lot }} &nbsp; หมดอายุ: {{ item.expiryLabel }}</div>
+              <div style="color:#f87171; padding-left:12px;">❌ {{ item.daysLabel }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{ closePreview }}" style="margin-top:16px; width:100%; background:var(--accent); color:white; border:none; padding:11px; border-radius:10px; font-weight:700; cursor:pointer; font-family:inherit; flex-shrink:0;">ปิด</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- Edit User Modal -->
+  <sc-if value="{{ editUserOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeEditUser }}" style="position:fixed; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:60; padding:20px;">
+      <div onClick="{{ stopClick }}" style="background:var(--card); color:var(--text); border-radius:16px; padding:24px; width:380px; max-width:100%; border:1px solid var(--border);">
+        <div style="font-weight:800; font-size:16px; margin-bottom:16px; display:flex; align-items:center; gap:8px;">✏️ แก้ไขข้อมูลผู้ใช้งาน</div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">ชื่อ-นามสกุล</div>
+            <input type="text" value="{{ editName }}" onChange="{{ onEditNameChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+          </div>
+          <div>
+            <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">ชื่อผู้ใช้งาน</div>
+            <input type="text" value="{{ editUsername }}" onChange="{{ onEditUsernameChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+          </div>
+          <div>
+            <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">รหัสผ่านใหม่ (เว้นว่างหากไม่เปลี่ยน)</div>
+            <input type="text" placeholder="รหัสผ่านใหม่" value="{{ editPassword }}" onChange="{{ onEditPasswordChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+          </div>
+          <div>
+            <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">สิทธิ์การใช้งาน</div>
+            <select value="{{ editRole }}" onChange="{{ onEditRoleChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit; cursor:pointer;">
+              <option value="staff">เจ้าหน้าที่</option>
+              <option value="admin">ผู้ดูแลระบบ</option>
+            </select>
+          </div>
+          <sc-if value="{{ editUserError }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12.5px; color:#ef4444; font-weight:600;">{{ editUserError }}</div>
+          </sc-if>
+          <div style="display:flex; gap:10px; margin-top:6px;">
+            <button onClick="{{ closeEditUser }}" style="flex:1; background:var(--card-2); color:var(--text); border:1px solid var(--border); padding:11px; border-radius:10px; font-weight:700; cursor:pointer; font-family:inherit;">ยกเลิก</button>
+            <button onClick="{{ saveEditUser }}" style="flex:1; background:var(--accent); color:white; border:none; padding:11px; border-radius:10px; font-weight:700; cursor:pointer; font-family:inherit;">บันทึก</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const DRUG_POOL = [
+  { name: 'Paracetamol 500 mg', unit: 'เม็ด' },
+  { name: 'Amoxicillin 500 mg', unit: 'แคปซูล' },
+  { name: 'Metformin 500 mg', unit: 'เม็ด' },
+  { name: 'Amlodipine 5 mg', unit: 'เม็ด' },
+  { name: 'Simvastatin 20 mg', unit: 'เม็ด' },
+  { name: 'Omeprazole 20 mg', unit: 'แคปซูล' },
+  { name: 'Losartan 50 mg', unit: 'เม็ด' },
+  { name: 'Enalapril 5 mg', unit: 'เม็ด' },
+  { name: 'Cetirizine 10 mg', unit: 'เม็ด' },
+  { name: 'Domperidone 10 mg', unit: 'เม็ด' },
+  { name: 'Ibuprofen 400 mg', unit: 'เม็ด' },
+  { name: 'Diclofenac 25 mg', unit: 'เม็ด' },
+  { name: 'Oral Rehydration Salt (ORS)', unit: 'ซอง' },
+  { name: 'Water for Injection 10 ML', unit: 'ขวด' },
+  { name: 'Normal Saline 0.9% 1000 ML', unit: 'ถุง' },
+  { name: '5% Dextrose 1000 ML', unit: 'ถุง' },
+  { name: 'Insulin NPH 100 IU/ML', unit: 'ขวด' },
+  { name: 'Salbutamol Inhaler', unit: 'หลอด' },
+  { name: 'Vitamin B Complex', unit: 'เม็ด' },
+  { name: 'Ferrous Fumarate', unit: 'เม็ด' },
+  { name: 'Folic Acid 5 mg', unit: 'เม็ด' },
+  { name: 'Aspirin 300 mg', unit: 'เม็ด' },
+  { name: 'Warfarin 3 mg', unit: 'เม็ด' },
+  { name: 'Furosemide 40 mg', unit: 'เม็ด' },
+  { name: 'Hydrochlorothiazide 25 mg', unit: 'เม็ด' },
+  { name: 'Ranitidine 150 mg', unit: 'เม็ด' },
+  { name: 'Chlorpheniramine 4 mg', unit: 'เม็ด' },
+  { name: 'Dexamethasone 0.5 mg', unit: 'เม็ด' },
+  { name: 'Prednisolone 5 mg', unit: 'เม็ด' },
+  { name: 'Amoxicillin/Clavulanate 625 mg', unit: 'เม็ด' },
+  { name: 'Ceftriaxone 1 g Inj', unit: 'ขวด' },
+  { name: 'Metronidazole 400 mg', unit: 'เม็ด' },
+  { name: 'Loperamide 2 mg', unit: 'เม็ด' },
+  { name: 'Multivitamin Syrup', unit: 'ขวด' },
+  { name: 'Calcium Carbonate 500 mg', unit: 'เม็ด' },
+  { name: 'Lidocaine 2% Inj', unit: 'ขวด' },
+  { name: 'Tetanus Toxoid Vaccine', unit: 'โด๊ส' },
+  { name: 'Rabies Vaccine', unit: 'โด๊ส' },
+  { name: 'Diazepam 5 mg', unit: 'เม็ด' },
+  { name: 'Atropine Sulfate Inj', unit: 'แอมพูล' },
+  { name: 'Adrenaline (Epinephrine) Inj', unit: 'แอมพูล' },
+  { name: 'Mupirocin Ointment', unit: 'หลอด' },
+  { name: 'Clotrimazole Cream', unit: 'หลอด' },
+  { name: 'Silver Sulfadiazine Cream', unit: 'หลอด' },
+  { name: 'Povidone Iodine Solution', unit: 'ขวด' },
+  { name: '70% Alcohol', unit: 'ขวด' },
+  { name: 'Cotton Gauze Pad', unit: 'ห่อ' },
+  { name: 'Surgical Gloves (M)', unit: 'กล่อง' },
+  { name: 'ORS ผงเกลือแร่', unit: 'ซอง' },
+  { name: 'Sodium Chloride Nasal Drops', unit: 'ขวด' },
+  { name: 'Chlorhexidine Mouthwash', unit: 'ขวด' }
+];
+
+const WAREHOUSES = ['คลังใหญ่', 'คลังย่อย', 'คลังฉุกเฉิน'];
+
+const STAFF_NAMES = [
+  'ภญ.สมศรี ใจดี', 'ภก.ประเสริฐ วงศ์สุวรรณ', 'นางสาวอรทัย พรมมา', 'นายสมชาย รักเรียน',
+  'ภญ.นิภาพร สุขเจริญ', 'นายวีระชัย บุญมี', 'นางสาวกัลยา แสงทอง', 'ภก.ธนกร ศรีสุข',
+  'นางสมพร คำแก้ว', 'นายอนุชา ทองดี'
+];
+const RECEIVE_SOURCES = [
+  'องค์การเภสัชกรรม (GPO)', 'บริษัท เบอร์ลินฟาร์มาซูติคอลฯ', 'คลังยาสำนักงานสาธารณสุขจังหวัดเลย',
+  'โรงพยาบาลเลย (คลังกลาง)', 'บริษัท ยูนีซัน จำกัด', 'บริษัท ดีเคเอสเอช (ประเทศไทย)'
+];
+const DISPENSE_DESTINATIONS = [
+  'ห้องจ่ายยา OPD', 'รพ.สต.เครือข่ายอำเภอเอราวัณ', 'หน่วยปฐมภูมิบ้านโนนสวรรค์',
+  'ห้องอุบัติเหตุ-ฉุกเฉิน', 'หอผู้ป่วยใน', 'คลังย่อยแผนกทันตกรรม'
+];
+
+const OFFSETS = [
+  -60,-50,-45,-40,-33,-25,-20,-15,-12,-8,-5,-3,
+  3,7,10,14,18,22,26,29,
+  35,40,48,55,60,65,70,78,84,89,
+  95,105,115,125,135,145,155,165,175,179,
+  190,205,220,235,250,265,280,295,310,325,340,360,
+  380,400,420,450,480,500,520,550,600,650
+];
+
+// Status colors are fixed; the day thresholds themselves are admin-configurable (see Component.getStatus)
+const STATUS_COLORS = {
+  expired: { solid: '#ef4444', bg: 'rgba(239,68,68,0.14)' },
+  d30:     { solid: '#f43f5e', bg: 'rgba(244,63,94,0.14)' },
+  d90:     { solid: '#f97316', bg: 'rgba(249,115,22,0.14)' },
+  d180:    { solid: '#f59e0b', bg: 'rgba(245,158,11,0.14)' },
+  d365:    { solid: '#10b981', bg: 'rgba(16,185,129,0.14)' },
+  normal:  { solid: '#3b82f6', bg: 'rgba(59,130,246,0.14)' }
+};
+
+function fmtThaiDate(date) {
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const yyyy = date.getFullYear() + 543;
+  return dd + '/' + mm + '/' + yyyy;
+}
+
+// Deterministic-but-messy scattered small-logo positions for the login watermark
+function pseudoRand(seed) {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+const LOGIN_WATERMARKS = Array.from({ length: 26 }).map((_, i) => {
+  return {
+    top: Math.round(pseudoRand(i * 3.1 + 1) * 100),
+    left: Math.round(pseudoRand(i * 7.7 + 5) * 100),
+    size: 30 + Math.round(pseudoRand(i * 5.3 + 9) * 90),
+    rot: Math.round(pseudoRand(i * 9.9 + 2) * 360 - 180)
+  };
+});
+
+const THAI_DAYS = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+// ===== Live data feed (Google Sheet via /api/data on Vercel) =====
+const API_URL = '/api/data';
+const SYNC_INTERVAL_MS = 5 * 60 * 1000; // auto-refresh every 5 minutes
+
+class Component extends DCLogic {
+  state = {
+    page: 'dashboard',
+    theme: 'dark',
+    tick: new Date(),
+    search: '',
+    warehouseFilter: 'all',
+    statusFilter: 'all',
+    daysMaxFilter: null,
+    daysMaxFilterLabel: '',
+    sheetUrl: '', sheetTabName: '', syncInterval: 'realtime', sheetConnected: false,
+    sheetConnecting: false, sheetTesting: false, sheetError: '', sheetLastSync: null,
+    sortKey: 'expiry',
+    sortDir: 'asc',
+    currentPage: 1,
+    toast: null,
+    previewOpen: false,
+    refreshing: false,
+    dataStatus: 'loading', dataError: '', lastSync: null,
+    autoSendEnabled: true,
+    loggedInUser: null,
+    userMenuOpen: false,
+    loginUser: '', loginPass: '', loginError: '',
+    newUserName: '', newUserUsername: '', newUserPassword: '', newUserRole: 'staff', newUserError: '',
+
+    editUserOpen: false, editTargetUsername: '', editName: '', editUsername: '', editPassword: '', editRole: 'staff', editUserError: '',
+
+    notifMenuOpen: false,
+    notifSeenTotal: 0,
+    viewportWidth: 1400,
+    sidebarOpen: false,
+    thresholds: { d30: 30, d90: 90, d180: 180, d365: 365 },
+    selectedDrugName: null, pageBeforeDetail: 'dashboard',
+    auditLog: [],
+
+    users: [
+      { name: 'ผู้ดูแลระบบ', username: 'admin', password: 'admin1234', role: 'admin' },
+      { name: 'เจ้าหน้าที่เภสัชกรรม', username: 'staff', password: 'staff1234', role: 'staff' }
+    ],
+
+    recSearch: '', recSortKey: 'date', recSortDir: 'desc', recPage: 1,
+    dispSearch: '', dispSortKey: 'date', dispSortDir: 'desc', dispPage: 1,
+
+    stockSearch: '', stockWarehouseFilter: 'all', stockSortKey: 'qty', stockSortDir: 'desc', stockPage: 1
+  };
+
+  constructor(props) {
+    super(props);
+    const today = new Date();
+    this.allDrugs = OFFSETS.map((offset, i) => {
+      const pool = DRUG_POOL[i % DRUG_POOL.length];
+      const expiry = new Date(today.getTime() + offset * 86400000);
+      const daysLeft = offset;
+      const qty = 15 + ((i * 37) % 260);
+      return {
+        idx: i + 1,
+        code: 'YA-' + String(1001 + i).padStart(5, '0'),
+        name: pool.name,
+        unit: pool.unit,
+        warehouse: WAREHOUSES[i % WAREHOUSES.length],
+        lot: 'LOT-' + (2200 + i * 7),
+        expiry,
+        daysLeft,
+        expiryLabel: fmtThaiDate(expiry),
+        daysLabel: daysLeft < 0 ? ('หมดอายุแล้ว ' + Math.abs(daysLeft) + ' วัน') : ('เหลือ ' + daysLeft + ' วัน'),
+        qty
+      };
+    });
+    this._toastTimer = null;
+
+    this.receivingLogs = Array.from({ length: 42 }).map((_, i) => {
+      const pool = DRUG_POOL[(i * 3 + 2) % DRUG_POOL.length];
+      const dayOffset = -1 - ((i * 5) % 58);
+      const date = new Date(today.getTime() + dayOffset * 86400000);
+      const hh = 8 + (i % 9);
+      const mm = (i * 7) % 60;
+      return {
+        idx: i + 1,
+        date,
+        dateLabel: fmtThaiDate(date),
+        time: String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0'),
+        name: pool.name,
+        unit: pool.unit,
+        qty: 20 + ((i * 43) % 400),
+        lot: 'LOT-' + (3100 + i * 9),
+        person: STAFF_NAMES[i % STAFF_NAMES.length],
+        place: RECEIVE_SOURCES[i % RECEIVE_SOURCES.length]
+      };
+    });
+
+    this.dispensingLogs = Array.from({ length: 38 }).map((_, i) => {
+      const pool = DRUG_POOL[(i * 4 + 5) % DRUG_POOL.length];
+      const dayOffset = -1 - ((i * 4) % 50);
+      const date = new Date(today.getTime() + dayOffset * 86400000);
+      const hh = 8 + ((i + 3) % 9);
+      const mm = (i * 11) % 60;
+      return {
+        idx: i + 1,
+        date,
+        dateLabel: fmtThaiDate(date),
+        time: String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0'),
+        name: pool.name,
+        unit: pool.unit,
+        qty: 5 + ((i * 29) % 180),
+        lot: 'LOT-' + (2200 + i * 7),
+        person: STAFF_NAMES[(i + 4) % STAFF_NAMES.length],
+        place: DISPENSE_DESTINATIONS[i % DISPENSE_DESTINATIONS.length]
+      };
+    });
+  }
+
+  componentDidMount() {
+    this._clockTimer = setInterval(() => this.setState({ tick: new Date() }), 1000);
+    this._onResize = () => this.setState({ viewportWidth: window.innerWidth });
+    window.addEventListener('resize', this._onResize);
+    this.setState({ viewportWidth: window.innerWidth });
+    this.loadData(false);
+    this._syncTimer = setInterval(() => this.loadData(false), SYNC_INTERVAL_MS);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._clockTimer);
+    clearInterval(this._syncTimer);
+    clearTimeout(this._toastTimer);
+    window.removeEventListener('resize', this._onResize);
+  }
+
+  // Map raw Sheet rows -> internal records, computing the derived fields render() expects.
+  ingest(payload) {
+    const today = new Date();
+    const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const toDate = (v) => {
+      if (v === null || v === undefined || v === '') return null;
+      const d = new Date(v);
+      return isNaN(d.getTime()) ? null : d;
+    };
+    const num = (v) => { const n = parseFloat(String(v == null ? '' : v).replace(/[, ]/g, '')); return isNaN(n) ? 0 : n; };
+
+    const meds = Array.isArray(payload.medicines) ? payload.medicines : [];
+    this.allDrugs = meds.map((r, i) => {
+      const expiry = toDate(r.expiry) || new Date(midnight.getTime());
+      const daysLeft = Math.round((expiry.getTime() - midnight.getTime()) / 86400000);
+      return {
+        idx: i + 1,
+        code: r.code || ('YA-' + String(1001 + i).padStart(5, '0')),
+        name: r.name || '-',
+        unit: r.unit || '',
+        warehouse: r.warehouse || '-',
+        lot: r.lot || '-',
+        expiry, daysLeft,
+        expiryLabel: fmtThaiDate(expiry),
+        daysLabel: daysLeft < 0 ? ('หมดอายุแล้ว ' + Math.abs(daysLeft) + ' วัน') : ('เหลือ ' + daysLeft + ' วัน'),
+        qty: num(r.qty)
+      };
+    });
+
+    const mapLog = (arr) => (Array.isArray(arr) ? arr : []).map((r, i) => {
+      const date = toDate(r.date) || new Date(midnight.getTime());
+      let time = r.time || '';
+      if (!time && r.date && String(r.date).indexOf('T') !== -1) {
+        time = String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+      }
+      return {
+        idx: i + 1, date, dateLabel: fmtThaiDate(date), time,
+        name: r.name || '-', unit: r.unit || '',
+        qty: num(r.qty), lot: r.lot || '-',
+        person: r.person || '-', place: r.place || '-'
+      };
+    });
+    this.receivingLogs = mapLog(payload.receiving);
+    this.dispensingLogs = mapLog(payload.dispensing);
+
+    return Array.isArray(payload.users) ? payload.users.filter(u => u && u.username) : [];
+  }
+
+  loadData(manual) {
+    if (manual) this.setState({ refreshing: true });
+    fetch(API_URL, { cache: 'no-store' })
+      .then(r => r.json())
+      .then(payload => {
+        if (!payload || payload.ok === false) throw new Error((payload && payload.error) || 'ไม่พบข้อมูล');
+        const users = this.ingest(payload);
+        const now = new Date();
+        const syncLabel = fmtThaiDate(now) + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+        this.setState(s => ({
+          dataStatus: 'ok', dataError: '', lastSync: syncLabel,
+          sheetLastSync: now, sheetConnected: true, refreshing: false,
+          users: users.length ? users : s.users
+        }));
+        if (manual) this.showToast('อัปเดตข้อมูลจากชีตเรียบร้อย');
+      })
+      .catch(err => {
+        const msg = (err && err.message) ? err.message : String(err);
+        this.setState({ dataStatus: 'error', dataError: msg, refreshing: false });
+        if (manual) this.showToast('เชื่อมต่อชีตไม่สำเร็จ — ' + msg);
+      });
+  }
+
+  showToast(msg) {
+    clearTimeout(this._toastTimer);
+    this.setState({ toast: msg });
+    this._toastTimer = setTimeout(() => this.setState({ toast: null }), 2800);
+  }
+
+  getFiltered() {
+    let rows = this.allDrugs;
+    const s = this.state.search.trim().toLowerCase();
+    if (s) rows = rows.filter(r => r.name.toLowerCase().includes(s) || r.lot.toLowerCase().includes(s) || r.code.toLowerCase().includes(s));
+    if (this.state.warehouseFilter !== 'all') rows = rows.filter(r => r.warehouse === this.state.warehouseFilter);
+    if (this.state.statusFilter !== 'all') rows = rows.filter(r => this.getStatus(r.daysLeft).key === this.state.statusFilter);
+    if (this.state.daysMaxFilter !== null) rows = rows.filter(r => r.daysLeft <= this.state.daysMaxFilter);
+
+    const key = this.state.sortKey;
+    const dir = this.state.sortDir === 'asc' ? 1 : -1;
+    rows = [...rows].sort((a, b) => {
+      let av, bv;
+      if (key === 'name') { av = a.name; bv = b.name; }
+      else if (key === 'warehouse') { av = a.warehouse; bv = b.warehouse; }
+      else if (key === 'qty') { av = a.qty; bv = b.qty; }
+      else { av = a.daysLeft; bv = b.daysLeft; }
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+    return rows.map((r, i) => ({ ...r, idx: i + 1, status: this.getStatus(r.daysLeft) }));
+  }
+
+  getFilteredLog(logs, searchKey, sortKey, sortDir) {
+    let rows = logs;
+    const s = searchKey.trim().toLowerCase();
+    if (s) rows = rows.filter(r => r.name.toLowerCase().includes(s) || r.person.toLowerCase().includes(s) || r.place.toLowerCase().includes(s) || r.lot.toLowerCase().includes(s));
+    const dir = sortDir === 'asc' ? 1 : -1;
+    rows = [...rows].sort((a, b) => {
+      let av, bv;
+      if (sortKey === 'name') { av = a.name; bv = b.name; }
+      else if (sortKey === 'qty') { av = a.qty; bv = b.qty; }
+      else { av = a.date.getTime(); bv = b.date.getTime(); }
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+    return rows.map((r, i) => ({ ...r, idx: i + 1 }));
+  }
+
+  setRecSort(key) {
+    this.setState(s => ({ recSortKey: key, recSortDir: s.recSortKey === key ? (s.recSortDir === 'asc' ? 'desc' : 'asc') : 'asc', recPage: 1 }));
+  }
+  setDispSort(key) {
+    this.setState(s => ({ dispSortKey: key, dispSortDir: s.dispSortKey === key ? (s.dispSortDir === 'asc' ? 'desc' : 'asc') : 'asc', dispPage: 1 }));
+  }
+
+  getStatus(daysLeft) {
+    const t = this.state.thresholds;
+    if (daysLeft < 0) return { key: 'expired', label: 'หมดอายุ', ...STATUS_COLORS.expired };
+    if (daysLeft <= t.d30) return { key: 'd30', label: '≤' + t.d30 + ' วัน', ...STATUS_COLORS.d30 };
+    if (daysLeft <= t.d90) return { key: 'd90', label: '≤' + t.d90 + ' วัน', ...STATUS_COLORS.d90 };
+    if (daysLeft <= t.d180) return { key: 'd180', label: '≤' + t.d180 + ' วัน', ...STATUS_COLORS.d180 };
+    if (daysLeft <= t.d365) return { key: 'd365', label: '≤' + t.d365 + ' วัน', ...STATUS_COLORS.d365 };
+    return { key: 'normal', label: 'ปกติ', ...STATUS_COLORS.normal };
+  }
+
+  injectSimulatedMovement() {
+    // Simulates a fresh sync bringing in one new receiving or dispensing record (drives the notification badge back up)
+    const pool = DRUG_POOL[Math.floor((this._toastTimer ? 1 : 0) + Date.now() / 1000) % DRUG_POOL.length];
+    const now = new Date();
+    const time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    const isIn = (this.receivingLogs.length + this.dispensingLogs.length) % 2 === 0;
+    if (isIn) {
+      this.receivingLogs = [{
+        idx: 0, date: now, dateLabel: fmtThaiDate(now), time,
+        name: pool.name, unit: pool.unit, qty: 10 + Math.floor(Math.random() * 100),
+        lot: 'LOT-' + (9000 + this.receivingLogs.length), person: STAFF_NAMES[0], place: RECEIVE_SOURCES[0]
+      }, ...this.receivingLogs];
+    } else {
+      this.dispensingLogs = [{
+        idx: 0, date: now, dateLabel: fmtThaiDate(now), time,
+        name: pool.name, unit: pool.unit, qty: 5 + Math.floor(Math.random() * 50),
+        lot: 'LOT-' + (8000 + this.dispensingLogs.length), person: STAFF_NAMES[1], place: DISPENSE_DESTINATIONS[0]
+      }, ...this.dispensingLogs];
+    }
+    this.forceUpdate();
+  }
+
+  connectSheet() {
+    const url = this.state.sheetUrl.trim();
+    if (!url) { this.setState({ sheetError: 'กรุณาระบุลิงก์ Google Sheet' }); return; }
+    if (!/^https:\/\/docs\.google\.com\/spreadsheets\//.test(url)) { this.setState({ sheetError: 'ลิงก์ไม่ถูกต้อง กรุณาวางลิงก์ Google Sheet ที่ถูกต้อง' }); return; }
+    if (!this.state.sheetTabName.trim()) { this.setState({ sheetError: 'กรุณาระบุชื่อชีต (Tab)' }); return; }
+    this.setState({ sheetConnecting: true, sheetError: '' });
+    setTimeout(() => {
+      this.setState({ sheetConnecting: false, sheetConnected: true, sheetLastSync: new Date() });
+      this.showToast('เชื่อมต่อ Google Sheet สำเร็จ');
+      this.logAudit('เชื่อมต่อฐานข้อมูล Google Sheet ("' + this.state.sheetTabName + '")');
+    }, 1100);
+  }
+
+  disconnectSheet() {
+    this.setState({ sheetConnected: false, sheetLastSync: null });
+    this.showToast('ยกเลิกการเชื่อมต่อ Google Sheet แล้ว');
+    this.logAudit('ยกเลิกการเชื่อมต่อฐานข้อมูล Google Sheet');
+  }
+
+  testSheetConnection() {
+    this.setState({ sheetTesting: true });
+    fetch(API_URL, { cache: 'no-store' })
+      .then(r => r.json())
+      .then(payload => {
+        if (!payload || payload.ok === false) throw new Error((payload && payload.error) || 'ไม่พบข้อมูล');
+        this.ingest(payload);
+        this.loadData(false);
+        this.setState({ sheetTesting: false, sheetLastSync: new Date() });
+        const n = (payload.medicines || []).length;
+        this.showToast('ทดสอบการเชื่อมต่อสำเร็จ — อ่านข้อมูลจากชีตได้ ' + n + ' รายการ');
+      })
+      .catch(err => {
+        this.setState({ sheetTesting: false });
+        this.showToast('ทดสอบไม่สำเร็จ — ' + ((err && err.message) || err));
+      });
+  }
+
+  goListWithFilter(filters, label) {
+    this.setState({
+      page: 'list',
+      currentPage: 1,
+      search: '',
+      warehouseFilter: 'all',
+      statusFilter: filters.statusFilter || 'all',
+      daysMaxFilter: filters.daysMaxFilter !== undefined ? filters.daysMaxFilter : null,
+      daysMaxFilterLabel: label || ''
+    });
+  }
+
+  openDrugDetail(name) {
+    this.setState(s => ({ selectedDrugName: name, pageBeforeDetail: s.page, page: 'drugdetail' }));
+  }
+
+  logAudit(action) {
+    const t = new Date();
+    const time = String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0') + ':' + String(t.getSeconds()).padStart(2,'0') + ' ' + fmtThaiDate(t);
+    const actor = this.state.loggedInUser ? this.state.loggedInUser.name : '-';
+    this.setState(s => ({ auditLog: [{ time, actor, action }, ...s.auditLog].slice(0, 50) }));
+  }
+
+  handleLogin() {
+    const u = this.state.loginUser.trim();
+    const p = this.state.loginPass.trim();
+    if (!u || !p) {
+      this.setState({ loginError: 'กรุณากรอกชื่อผู้ใช้งานและรหัสผ่าน' });
+      return;
+    }
+    const match = this.state.users.find(x => x.username === u && x.password === p);
+    if (!match) {
+      this.setState({ loginError: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' });
+      return;
+    }
+    this.setState({ loggedInUser: match, loginError: '', page: 'dashboard' });
+    this.logAudit(match.name + ' เข้าสู่ระบบ');
+  }
+
+  renderVals() {
+    const theme = this.state.theme;
+    const isDark = theme === 'dark';
+    const isMobile = (this.state.viewportWidth || 1400) < 880;
+    const rootStyle = isDark ? {
+      '--bg': '#0b1220', '--card': '#131f38', '--card-2': '#101a2e', '--border': '#22314f',
+      '--text': '#e7edf7', '--text-dim': '#8b9ab3', '--accent': '#3b82f6', '--accent-2': '#60a5fa',
+      '--sidebar-bg': '#0a0f1c', '--sidebar-card': '#111a2e', '--sidebar-border': '#1c2a45',
+      '--sidebar-text': '#e7edf7', '--sidebar-text-dim': '#7c8aa3', '--sidebar-accent': '#7dd3fc',
+      '--sidebar-active-bg': 'rgba(59,130,246,0.18)', '--sidebar-inactive': '#cbd5e1', '--sidebar-disabled': '#4b5567'
+    } : {
+      '--bg': '#f2f5f9', '--card': '#ffffff', '--card-2': '#f4f7fb', '--border': '#e2e8f0',
+      '--text': '#0f172a', '--text-dim': '#64748b', '--accent': '#2563eb', '--accent-2': '#1d4ed8',
+      '--sidebar-bg': '#ffffff', '--sidebar-card': '#f4f7fb', '--sidebar-border': '#e2e8f0',
+      '--sidebar-text': '#0f172a', '--sidebar-text-dim': '#64748b', '--sidebar-accent': '#2563eb',
+      '--sidebar-active-bg': 'rgba(37,99,235,0.12)', '--sidebar-inactive': '#475569', '--sidebar-disabled': '#a3adba'
+    };
+
+    const navBase = { display: 'flex', alignItems: 'center', gap: '10px', padding: '11px 12px', borderRadius: '10px', cursor: 'pointer', fontSize: '13.5px', fontWeight: 600 };
+
+    // Responsive layout
+    const sidebarStyle = isMobile ? {
+      width: '264px', flexShrink: 0, background: 'var(--sidebar-bg)', color: 'var(--sidebar-text)', display: 'flex', flexDirection: 'column',
+      padding: '22px 16px', gap: '22px', borderRight: '1px solid var(--sidebar-border)', transition: 'transform .25s ease',
+      position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 90, overflowY: 'auto',
+      transform: this.state.sidebarOpen ? 'translateX(0)' : 'translateX(-100%)'
+    } : {
+      width: '264px', flexShrink: 0, background: 'var(--sidebar-bg)', color: 'var(--sidebar-text)', display: 'flex', flexDirection: 'column',
+      padding: '22px 16px', gap: '22px', borderRight: '1px solid var(--sidebar-border)', transition: 'background .2s, color .2s'
+    };
+    const mainStyle = { flex: 1, minWidth: 0, padding: isMobile ? '18px 16px 32px' : '28px 32px 40px', display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '20px' };
+    const summaryGridStyle = { display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(6,1fr)', gap: '14px' };
+    const chartsGridStyle = { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.3fr 1fr', gap: '14px', alignItems: 'stretch' };
+    const newUserFormGridStyle = { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr 1fr auto', gap: '10px', alignItems: 'end' };
+    const thresholdGridStyle = { display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4,1fr)', gap: '12px' };
+    const page = this.state.page;
+    const isDashboard = page === 'dashboard';
+    const isList = page === 'list';
+    const isReceiving = page === 'receiving';
+    const isDispensing = page === 'dispensing';
+    const isStock = page === 'stock';
+    const isAdmin = page === 'admin';
+    const isDrugDetail = page === 'drugdetail';
+    const isSettings = page === 'settings';
+    const isDbConnect = page === 'dbconnect';
+    const navStyleDashboard = { ...navBase, background: isDashboard ? 'var(--sidebar-active-bg)' : 'transparent', color: isDashboard ? 'var(--sidebar-accent)' : 'var(--sidebar-inactive)' };
+    const navStyleList = { ...navBase, background: isList ? 'var(--sidebar-active-bg)' : 'transparent', color: isList ? 'var(--sidebar-accent)' : 'var(--sidebar-inactive)' };
+    const navStyleReceiving = { ...navBase, background: isReceiving ? 'var(--sidebar-active-bg)' : 'transparent', color: isReceiving ? 'var(--sidebar-accent)' : 'var(--sidebar-inactive)' };
+    const navStyleDispensing = { ...navBase, background: isDispensing ? 'var(--sidebar-active-bg)' : 'transparent', color: isDispensing ? 'var(--sidebar-accent)' : 'var(--sidebar-inactive)' };
+    const navStyleAdmin = { ...navBase, background: isAdmin ? 'var(--sidebar-active-bg)' : 'transparent', color: isAdmin ? 'var(--sidebar-accent)' : 'var(--sidebar-inactive)' };
+    const navStyleStock = { ...navBase, background: isStock ? 'var(--sidebar-active-bg)' : 'transparent', color: isStock ? 'var(--sidebar-accent)' : 'var(--sidebar-inactive)' };
+    const navStyleSettings = { ...navBase, background: isSettings ? 'var(--sidebar-active-bg)' : 'transparent', color: isSettings ? 'var(--sidebar-accent)' : 'var(--sidebar-inactive)' };
+    const navStyleDbConnect = { ...navBase, background: isDbConnect ? 'var(--sidebar-active-bg)' : 'transparent', color: isDbConnect ? 'var(--sidebar-accent)' : 'var(--sidebar-inactive)' };
+    const navStyleDisabled = { ...navBase, color: 'var(--sidebar-disabled)' };
+
+    const t = this.state.tick;
+    const clockTime = [t.getHours(), t.getMinutes(), t.getSeconds()].map(n => String(n).padStart(2, '0')).join(':');
+    const clockDate = 'วัน' + THAI_DAYS[t.getDay()] + ' ' + t.getDate() + ' ' + THAI_MONTHS[t.getMonth()] + ' พ.ศ. ' + (t.getFullYear() + 543);
+
+    const th = this.state.thresholds;
+    const counts = { expired: 0, d30: 0, d90: 0, d180: 0, d365: 0 };
+    let cumD30 = 0, cumD90 = 0, cumD180 = 0, cumD365 = 0;
+    this.allDrugs.forEach(r => {
+      if (r.daysLeft < 0) counts.expired++;
+      if (r.daysLeft <= th.d30) cumD30++;
+      if (r.daysLeft <= th.d90) cumD90++;
+      if (r.daysLeft <= th.d180) cumD180++;
+      if (r.daysLeft <= th.d365) cumD365++;
+    });
+    const totalItems = this.allDrugs.length;
+    const totalStock = this.allDrugs.reduce((a, r) => a + r.qty, 0);
+
+    const summaryCards = [
+      { label: 'หมดอายุแล้ว / วันนี้', sub: 'ต้องดำเนินการด่วน', value: counts.expired, color: '#ef4444',
+        onClick: () => this.goListWithFilter({ statusFilter: 'expired' }, 'หมดอายุแล้ว') },
+      { label: 'เหลือ ≤' + th.d30 + ' วัน', sub: 'เตรียมนำยาออก', value: cumD30, color: '#f43f5e',
+        onClick: () => this.goListWithFilter({ daysMaxFilter: th.d30 }, 'เหลือ ≤' + th.d30 + ' วัน') },
+      { label: 'เหลือ ≤' + th.d90 + ' วัน', sub: 'เฝ้าระวัง', value: cumD90, color: '#f97316',
+        onClick: () => this.goListWithFilter({ daysMaxFilter: th.d90 }, 'เหลือ ≤' + th.d90 + ' วัน') },
+      { label: 'เหลือ ≤' + th.d180 + ' วัน', sub: 'เตรียมคืนยา', value: cumD180, color: '#f59e0b',
+        onClick: () => this.goListWithFilter({ daysMaxFilter: th.d180 }, 'เหลือ ≤' + th.d180 + ' วัน') },
+      { label: 'เหลือ ≤' + th.d365 + ' วัน', sub: 'เตรียมคืน/เปลี่ยน', value: cumD365, color: '#10b981',
+        onClick: () => this.goListWithFilter({ daysMaxFilter: th.d365 }, 'เหลือ ≤' + th.d365 + ' วัน') },
+      { label: 'รวมทั้งหมดใน ' + th.d365 + ' วัน', sub: 'ทุกคลังยา', value: cumD365, color: '#3b82f6',
+        onClick: () => this.goListWithFilter({ daysMaxFilter: th.d365 }, 'รวมทั้งหมดใน ' + th.d365 + ' วัน') }
+    ];
+
+    const criticalTop10 = [...this.allDrugs]
+      .filter(r => r.daysLeft <= th.d30)
+      .sort((a, b) => a.daysLeft - b.daysLeft)
+      .slice(0, 10)
+      .map((r, i) => ({ ...r, idx: i + 1, status: this.getStatus(r.daysLeft), onOpenDetail: () => this.openDrugDetail(r.name) }));
+
+    const warehouseOptions = [{ value: 'all', label: 'ทุกคลัง' }, ...WAREHOUSES.map(w => ({ value: w, label: w }))];
+    const statusOptions = [
+      { value: 'all', label: 'ทุกสถานะ' },
+      { value: 'expired', label: 'หมดอายุ' },
+      { value: 'd30', label: '≤30 วัน' },
+      { value: 'd90', label: '≤90 วัน' },
+      { value: 'd180', label: '≤180 วัน' },
+      { value: 'd365', label: '≤365 วัน' },
+      { value: 'normal', label: 'ปกติ' }
+    ];
+
+    const filtered = this.getFiltered();
+    const pageSize = 10;
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    const currentPage = Math.min(this.state.currentPage, totalPages);
+    const pagedRows = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize).map(r => ({ ...r, onOpenDetail: () => this.openDrugDetail(r.name) }));
+
+    const arrow = (key) => this.state.sortKey === key ? (this.state.sortDir === 'asc' ? '▲' : '▼') : '';
+    const sortArrows = { name: arrow('name'), warehouse: arrow('warehouse'), expiry: arrow('expiry'), qty: arrow('qty') };
+
+    const pagerBtnDisabled = { opacity: 0.4, cursor: 'not-allowed' };
+    const pagerBtnStyle = { background: 'var(--card-2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '7px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
+
+    const previewDateLabel = fmtThaiDate(new Date());
+    const previewSummary = [
+      { color: '#ef4444', label: 'หมดอายุแล้ว', count: counts.expired },
+      { color: '#f43f5e', label: 'เหลือ ≤30 วัน (นำออก)', count: cumD30 },
+      { color: '#f97316', label: 'เหลือ ≤90 วัน (เฝ้าระวัง)', count: cumD90 },
+      { color: '#f59e0b', label: 'เหลือ ≤180 วัน (คืนยา)', count: cumD180 },
+      { color: '#10b981', label: 'เหลือ ≤365 วัน (เตรียม)', count: cumD365 }
+    ];
+    const previewUrgent = criticalTop10.slice(0, 5).map(r => ({ name: r.name, lot: r.lot, expiryLabel: r.expiryLabel, daysLabel: r.daysLabel }));
+
+    // Usage bar chart: dispensing qty grouped by month, last 6 months
+    const nowRef = new Date();
+    const monthBuckets = [];
+    for (let m = 5; m >= 0; m--) {
+      const d = new Date(nowRef.getFullYear(), nowRef.getMonth() - m, 1);
+      monthBuckets.push({ y: d.getFullYear(), mo: d.getMonth(), label: THAI_MONTHS[d.getMonth()].slice(0, 3) });
+    }
+    const usageRaw = monthBuckets.map(b => {
+      const sum = this.dispensingLogs.filter(l => l.date.getFullYear() === b.y && l.date.getMonth() === b.mo).reduce((a, l) => a + l.qty, 0);
+      return { label: b.label, value: sum };
+    });
+    const maxUsage = Math.max(1, ...usageRaw.map(b => b.value));
+    const usageBars = usageRaw.map(b => ({ ...b, heightPct: Math.max(4, Math.round((b.value / maxUsage) * 100)) }));
+
+    // Pie chart: remaining stock by drug name, top 6 + others
+    const byName = {};
+    this.allDrugs.forEach(r => { byName[r.name] = (byName[r.name] || 0) + r.qty; });
+    const sortedNames = Object.keys(byName).sort((a, b) => byName[b] - byName[a]);
+    const pieColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#94a3b8'];
+    const topNames = sortedNames.slice(0, 6);
+    const otherSum = sortedNames.slice(6).reduce((a, n) => a + byName[n], 0);
+    const pieItems = topNames.map((n, i) => ({ label: n, qty: byName[n], color: pieColors[i] }));
+    if (otherSum > 0) pieItems.push({ label: 'อื่นๆ', qty: otherSum, color: pieColors[6] });
+    const pieTotal = pieItems.reduce((a, p) => a + p.qty, 0) || 1;
+    let acc = 0;
+    const gradientParts = pieItems.map(p => {
+      const start = (acc / pieTotal) * 360;
+      acc += p.qty;
+      const end = (acc / pieTotal) * 360;
+      return p.color + ' ' + start.toFixed(1) + 'deg ' + end.toFixed(1) + 'deg';
+    });
+    const pieGradient = 'conic-gradient(' + gradientParts.join(', ') + ')';
+    const pieLegend = pieItems.map(p => ({ ...p, pct: Math.round((p.qty / pieTotal) * 100) }));
+
+    // Full stock breakdown per drug name (for the "stock" page)
+    const stockAggAll = {};
+    this.allDrugs.forEach(r => {
+      if (!stockAggAll[r.name]) stockAggAll[r.name] = { name: r.name, unit: r.unit, qty: 0, warehouses: new Set() };
+      stockAggAll[r.name].qty += r.qty;
+      stockAggAll[r.name].warehouses.add(r.warehouse);
+    });
+    const grandTotalQty = Object.values(stockAggAll).reduce((a, r) => a + r.qty, 0) || 1;
+    let stockRows = Object.values(stockAggAll).map(r => ({
+      name: r.name,
+      unit: r.unit,
+      qty: r.qty,
+      pct: Math.round((r.qty / grandTotalQty) * 1000) / 10,
+      warehousesLabel: [...r.warehouses].join(', '),
+      warehouseSet: r.warehouses
+    }));
+    const stockSearchLower = this.state.stockSearch.trim().toLowerCase();
+    if (stockSearchLower) stockRows = stockRows.filter(r => r.name.toLowerCase().includes(stockSearchLower));
+    if (this.state.stockWarehouseFilter !== 'all') stockRows = stockRows.filter(r => r.warehouseSet.has(this.state.stockWarehouseFilter));
+    const stockDir = this.state.stockSortDir === 'asc' ? 1 : -1;
+    stockRows = [...stockRows].sort((a, b) => {
+      let av, bv;
+      if (this.state.stockSortKey === 'name') { av = a.name; bv = b.name; } else { av = a.qty; bv = b.qty; }
+      if (av < bv) return -1 * stockDir;
+      if (av > bv) return 1 * stockDir;
+      return 0;
+    });
+    const maxQty = Math.max(1, ...stockRows.map(r => r.qty));
+    stockRows = stockRows.map((r, i) => ({ ...r, idx: i + 1, barPct: Math.round((r.qty / maxQty) * 100), onOpenDetail: () => this.openDrugDetail(r.name) }));
+    const stockTotalPages = Math.max(1, Math.ceil(stockRows.length / pageSize));
+    const stockCurrentPage = Math.min(this.state.stockPage, stockTotalPages);
+    const stockPagedRows = stockRows.slice((stockCurrentPage - 1) * pageSize, stockCurrentPage * pageSize);
+    const stockArrow = (key) => this.state.stockSortKey === key ? (this.state.stockSortDir === 'asc' ? '▲' : '▼') : '';
+    const stockSortArrows = { name: stockArrow('name'), qty: stockArrow('qty') };
+
+    // Drug detail page data
+    const selName = this.state.selectedDrugName;
+    let detailDrug = { name: '', qty: 0, unit: '', warehousesLabel: '', totalIn: 0, totalOut: 0 };
+    let detailReceiving = [];
+    let detailDispensing = [];
+    if (selName) {
+      const matches = this.allDrugs.filter(r => r.name === selName);
+      const qtySum = matches.reduce((a, r) => a + r.qty, 0);
+      const whSet = new Set(matches.map(r => r.warehouse));
+      detailReceiving = this.receivingLogs.filter(r => r.name === selName).sort((a, b) => b.date - a.date);
+      detailDispensing = this.dispensingLogs.filter(r => r.name === selName).sort((a, b) => b.date - a.date);
+      detailDrug = {
+        name: selName,
+        qty: qtySum,
+        unit: matches[0] ? matches[0].unit : '',
+        warehousesLabel: 'พบใน ' + whSet.size + ' คลัง (' + [...whSet].join(', ') + ')',
+        totalIn: detailReceiving.reduce((a, r) => a + r.qty, 0),
+        totalOut: detailDispensing.reduce((a, r) => a + r.qty, 0)
+      };
+    }
+
+    // Notification bell
+    const criticalCount = counts.expired + cumD30;
+    const notifItems = criticalTop10.slice(0, 6).map(r => ({ ...r, onOpen: () => this.setState(s => ({ selectedDrugName: r.name, pageBeforeDetail: s.page, page: 'drugdetail', notifMenuOpen: false })) }));
+
+    const movementPool = [
+      ...this.receivingLogs.map(r => ({ ...r, type: 'in' })),
+      ...this.dispensingLogs.map(r => ({ ...r, type: 'out' }))
+    ].sort((a, b) => b.date - a.date).slice(0, 6);
+    const notifMovements = movementPool.map(m => ({
+      name: m.name,
+      dateLabel: m.dateLabel,
+      time: m.time,
+      qtyLabel: (m.type === 'in' ? '+' : '-') + m.qty + ' ' + m.unit,
+      typeLabel: m.type === 'in' ? 'รับเข้า' : 'ส่งออก',
+      badgeStyle: { fontSize: '10.5px', fontWeight: 700, padding: '3px 8px', borderRadius: '999px', whiteSpace: 'nowrap', background: m.type === 'in' ? 'rgba(22,163,74,0.14)' : 'rgba(239,68,68,0.14)', color: m.type === 'in' ? '#16a34a' : '#ef4444' },
+      onOpen: () => this.setState(s => ({ selectedDrugName: m.name, pageBeforeDetail: s.page, page: 'drugdetail', notifMenuOpen: false }))
+    }));
+    const notifTotal = criticalCount + this.receivingLogs.length + this.dispensingLogs.length;
+    const notifUnseen = Math.max(0, notifTotal - this.state.notifSeenTotal);
+
+    // Audit log rows
+    const auditRows = this.state.auditLog;
+
+    const recFiltered = this.getFilteredLog(this.receivingLogs, this.state.recSearch, this.state.recSortKey, this.state.recSortDir);
+    const recTotalPages = Math.max(1, Math.ceil(recFiltered.length / pageSize));
+    const recCurrentPage = Math.min(this.state.recPage, recTotalPages);
+    const recPagedRows = recFiltered.slice((recCurrentPage - 1) * pageSize, recCurrentPage * pageSize);
+
+    const dispFiltered = this.getFilteredLog(this.dispensingLogs, this.state.dispSearch, this.state.dispSortKey, this.state.dispSortDir);
+    const dispTotalPages = Math.max(1, Math.ceil(dispFiltered.length / pageSize));
+    const dispCurrentPage = Math.min(this.state.dispPage, dispTotalPages);
+    const dispPagedRows = dispFiltered.slice((dispCurrentPage - 1) * pageSize, dispCurrentPage * pageSize);
+
+    const autoSendOn = this.state.autoSendEnabled;
+
+    return {
+      hospitalName: 'โรงพยาบาลเอราวัณ จังหวัดเลย',
+      rootStyle,
+      loginWatermarks: LOGIN_WATERMARKS,
+      showLogin: !this.state.loggedInUser,
+      showApp: !!this.state.loggedInUser,
+      loginUser: this.state.loginUser,
+      loginPass: this.state.loginPass,
+      loginError: this.state.loginError,
+      onLoginUserChange: (e) => this.setState({ loginUser: e.target.value, loginError: '' }),
+      onLoginPassChange: (e) => this.setState({ loginPass: e.target.value, loginError: '' }),
+      doLogin: () => this.handleLogin(),
+      onLoginKeyDown: (e) => { if (e.key === 'Enter') this.handleLogin(); },
+      isDashboard,
+      isList,
+      isReceiving,
+      isDispensing,
+      isStock,
+      isAdmin,
+      isAdminRole: this.state.loggedInUser && this.state.loggedInUser.role === 'admin',
+      loggedInName: this.state.loggedInUser ? this.state.loggedInUser.name : '',
+      roleLabel: this.state.loggedInUser && this.state.loggedInUser.role === 'admin' ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่',
+      roleBadgeStyle: { fontSize: '10.5px', fontWeight: 700, padding: '2px 7px', borderRadius: '999px', whiteSpace: 'nowrap', background: (this.state.loggedInUser && this.state.loggedInUser.role === 'admin') ? 'rgba(139,92,246,0.15)' : 'rgba(59,130,246,0.15)', color: (this.state.loggedInUser && this.state.loggedInUser.role === 'admin') ? '#8b5cf6' : '#3b82f6' },
+      pageIcon: isDashboard ? '📊' : isList ? '💊' : isReceiving ? '📥' : isDispensing ? '📤' : isStock ? '📦' : isAdmin ? '🛡️' : isDrugDetail ? '💊' : isSettings ? '⚙️' : isDbConnect ? '🔗' : '💊',
+      pageTitle: isDashboard ? 'Dashboard' : isList ? 'รายการยาทั้งหมด' : isReceiving ? 'ประวัติการรับเข้ายา' : isDispensing ? 'ประวัติการส่งออกยา' : isStock ? 'ยาคงเหลือในคลังทั้งหมด' : isAdmin ? 'ผู้ดูแลระบบ' : isDrugDetail ? (this.state.selectedDrugName || 'รายละเอียดยา') : isSettings ? 'ตั้งค่า' : isDbConnect ? 'ตั้งค่าการเชื่อมต่อฐานข้อมูล' : '',
+      pageSubtitle: isDashboard
+        ? ('ภาพรวมยาที่ใกล้หมดอายุ — ข้อมูล ณ วันที่ ' + fmtThaiDate(new Date()))
+        : isList ? ('คลังยา ' + totalItems + ' รายการ — ค้นหา กรอง และเรียงลำดับได้')
+        : isReceiving ? ('บันทึกการรับยาเข้าคลัง ' + this.receivingLogs.length + ' รายการ')
+        : isDispensing ? ('บันทึกการส่งยาออกจากคลัง ' + this.dispensingLogs.length + ' รายการ')
+        : isStock ? ('สัดส่วนและจำนวนคงเหลือของยาแต่ละรายการ ทุกคลัง')
+        : isAdmin ? ('จัดการบัญชีผู้ใช้งานและสิทธิ์การเข้าถึงระบบ')
+        : isDrugDetail ? ('ประวัติการรับเข้า-ส่งออกของยารายการนี้')
+        : isSettings ? ('ปรับเกณฑ์การแจ้งเตือนและการตั้งค่าระบบ')
+        : ('การเชื่อมต่อกับฐานข้อมูลภายนอก'),
+      themeToggleIcon: isDark ? '🌙' : '☀️',
+      themeToggleLabel: isDark ? 'Dark' : 'Light',
+      themeToggleStyle: { display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)', padding: '9px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' },
+      toggleTheme: () => this.setState({ theme: isDark ? 'light' : 'dark' }),
+      goDashboard: () => this.setState({ page: 'dashboard', sidebarOpen: false }),
+      goList: () => this.setState({ page: 'list', currentPage: 1, sidebarOpen: false, daysMaxFilter: null, daysMaxFilterLabel: '', statusFilter: 'all' }),
+      goReceiving: () => this.setState({ page: 'receiving', sidebarOpen: false }),
+      goDispensing: () => this.setState({ page: 'dispensing', sidebarOpen: false }),
+      goStock: () => this.setState({ page: 'stock', stockPage: 1, sidebarOpen: false }),
+      goAdmin: () => this.setState({ page: 'admin', sidebarOpen: false }),
+      goSettings: () => this.setState({ page: 'settings', sidebarOpen: false }),
+      goDbConnect: () => this.setState({ page: 'dbconnect', sidebarOpen: false }),
+      goBackFromDetail: () => this.setState(s => ({ page: s.pageBeforeDetail || 'dashboard' })),
+      isDrugDetail, isSettings, isDbConnect,
+      comingSoon: () => this.showToast('ฟีเจอร์นี้อยู่ระหว่างการพัฒนา'),
+      doLogout: () => this.setState({ loggedInUser: null, loginUser: '', loginPass: '', page: 'dashboard', userMenuOpen: false }),
+      userMenuOpen: this.state.userMenuOpen,
+      toggleUserMenu: () => this.setState(s => ({ userMenuOpen: !s.userMenuOpen })),
+      closeUserMenu: () => this.setState({ userMenuOpen: false }),
+      navStyleDashboard, navStyleList, navStyleReceiving, navStyleDispensing, navStyleAdmin, navStyleStock, navStyleSettings, navStyleDbConnect, navStyleDisabled,
+      isMobile,
+      sidebarStyle, mainStyle, summaryGridStyle, chartsGridStyle, newUserFormGridStyle, thresholdGridStyle,
+      sidebarOpen: this.state.sidebarOpen,
+      toggleSidebar: () => this.setState(s => ({ sidebarOpen: !s.sidebarOpen })),
+      closeSidebar: () => this.setState({ sidebarOpen: false }),
+      clockTime, clockDate,
+      lastSyncLabel: this.state.lastSync || (clockDate.split(' ').slice(0,3).join(' ') + ' ' + clockTime.slice(0,5)),
+      dbDotColor: this.state.dataStatus === 'ok' ? '#22c55e' : (this.state.dataStatus === 'error' ? '#ef4444' : '#f59e0b'),
+      dbStatusLabel: this.state.dataStatus === 'ok' ? 'ฐานข้อมูล: เชื่อมต่อสำเร็จ' : (this.state.dataStatus === 'error' ? 'ฐานข้อมูล: เชื่อมต่อไม่สำเร็จ (แสดงข้อมูลตัวอย่าง)' : 'ฐานข้อมูล: กำลังเชื่อมต่อ…'),
+      counts: { totalItems, expired: counts.expired },
+      summaryCards,
+      criticalTop10,
+      sendLine: () => this.showToast('ส่งข้อความแจ้งเตือนผ่าน LINE เรียบร้อย (' + (cumD30 + counts.expired) + ' รายการ)'),
+      openPreview: () => this.setState({ previewOpen: true }),
+      closePreview: () => this.setState({ previewOpen: false }),
+      stopClick: (e) => e.stopPropagation(),
+      previewOpen: this.state.previewOpen,
+      previewDateLabel, previewSummary, previewUrgent,
+      usageBars, pieGradient, pieLegend,
+      autoSendEnabled: autoSendOn,
+      autoSendIcon: autoSendOn ? '🟢' : '⚪',
+      autoSendStatusLabel: autoSendOn ? 'เปิดใช้งาน' : 'ปิดใช้งาน',
+      autoSendPillStyle: { display: 'flex', alignItems: 'center', gap: '8px', background: autoSendOn ? 'rgba(34,197,94,0.12)' : 'var(--card)', color: autoSendOn ? '#16a34a' : 'var(--text-dim)', border: '1px solid ' + (autoSendOn ? 'rgba(34,197,94,0.35)' : 'var(--border)'), padding: '12px 18px', borderRadius: '10px', fontSize: '13.5px', fontWeight: 700, cursor: 'pointer' },
+      toggleAutoSend: () => {
+        this.setState(s => ({ autoSendEnabled: !s.autoSendEnabled }));
+        const nowOn = !this.state.autoSendEnabled;
+        this.showToast(nowOn ? 'เปิดใช้งานส่งอัตโนมัติทุกวัน 07:00 น.' : 'ปิดใช้งานส่งอัตโนมัติแล้ว');
+        this.logAudit((nowOn ? 'เปิด' : 'ปิด') + 'การส่ง LINE อัตโนมัติทุกวัน 07:00 น.');
+      },
+      refreshSpinStyle: this.state.refreshing ? { display: 'inline-block', animation: 'spin .6s linear infinite' } : { display: 'inline-block' },
+      refreshData: () => { this.loadData(true); },
+      toast: this.state.toast,
+
+      search: this.state.search,
+      onSearchChange: (e) => this.setState({ search: e.target.value, currentPage: 1, daysMaxFilter: null, daysMaxFilterLabel: '' }),
+      warehouseFilter: this.state.warehouseFilter,
+      onWarehouseChange: (e) => this.setState({ warehouseFilter: e.target.value, currentPage: 1, daysMaxFilter: null, daysMaxFilterLabel: '' }),
+      statusFilter: this.state.statusFilter,
+      onStatusChange: (e) => this.setState({ statusFilter: e.target.value, currentPage: 1, daysMaxFilter: null, daysMaxFilterLabel: '' }),
+      warehouseOptions, statusOptions,
+      daysMaxFilterLabel: this.state.daysMaxFilterLabel,
+      clearDaysMaxFilter: () => this.setState({ daysMaxFilter: null, daysMaxFilterLabel: '', statusFilter: 'all', currentPage: 1 }),
+      goListAll: () => this.setState({ page: 'list', currentPage: 1, search: '', warehouseFilter: 'all', statusFilter: 'all', daysMaxFilter: null, daysMaxFilterLabel: '' }),
+      filteredCount: filtered.length,
+      noResults: filtered.length === 0,
+      pagedRows,
+      sortArrows,
+      sortByName: () => this.setSort('name'),
+      sortByWarehouse: () => this.setSort('warehouse'),
+      sortByExpiry: () => this.setSort('expiry'),
+      sortByQty: () => this.setSort('qty'),
+      currentPage, totalPages,
+      pagerBtnStyle: currentPage <= 1 ? { ...pagerBtnStyle } : pagerBtnStyle,
+      prevPage: () => this.setState(s => ({ currentPage: Math.max(1, s.currentPage - 1) })),
+      nextPage: () => this.setState(s => ({ currentPage: Math.min(totalPages, s.currentPage + 1) })),
+
+      recSearch: this.state.recSearch,
+      onRecSearchChange: (e) => this.setState({ recSearch: e.target.value, recPage: 1 }),
+      recSortArrows: {
+        date: this.state.recSortKey === 'date' ? (this.state.recSortDir === 'asc' ? '▲' : '▼') : '',
+        name: this.state.recSortKey === 'name' ? (this.state.recSortDir === 'asc' ? '▲' : '▼') : '',
+        qty: this.state.recSortKey === 'qty' ? (this.state.recSortDir === 'asc' ? '▲' : '▼') : ''
+      },
+      recSortByDate: () => this.setRecSort('date'),
+      recSortByName: () => this.setRecSort('name'),
+      recSortByQty: () => this.setRecSort('qty'),
+      recFilteredCount: recFiltered.length,
+      recNoResults: recFiltered.length === 0,
+      recPagedRows,
+      recCurrentPage, recTotalPages,
+      recPrevPage: () => this.setState(s => ({ recPage: Math.max(1, s.recPage - 1) })),
+      recNextPage: () => this.setState(s => ({ recPage: Math.min(recTotalPages, s.recPage + 1) })),
+
+      dispSearch: this.state.dispSearch,
+      onDispSearchChange: (e) => this.setState({ dispSearch: e.target.value, dispPage: 1 }),
+      dispSortArrows: {
+        date: this.state.dispSortKey === 'date' ? (this.state.dispSortDir === 'asc' ? '▲' : '▼') : '',
+        name: this.state.dispSortKey === 'name' ? (this.state.dispSortDir === 'asc' ? '▲' : '▼') : '',
+        qty: this.state.dispSortKey === 'qty' ? (this.state.dispSortDir === 'asc' ? '▲' : '▼') : ''
+      },
+      dispSortByDate: () => this.setDispSort('date'),
+      dispSortByName: () => this.setDispSort('name'),
+      dispSortByQty: () => this.setDispSort('qty'),
+      dispFilteredCount: dispFiltered.length,
+      dispNoResults: dispFiltered.length === 0,
+      dispPagedRows,
+      dispCurrentPage, dispTotalPages,
+      dispPrevPage: () => this.setState(s => ({ dispPage: Math.max(1, s.dispPage - 1) })),
+      dispNextPage: () => this.setState(s => ({ dispPage: Math.min(dispTotalPages, s.dispPage + 1) })),
+
+      stockSearch: this.state.stockSearch,
+      onStockSearchChange: (e) => this.setState({ stockSearch: e.target.value, stockPage: 1 }),
+      stockWarehouseFilter: this.state.stockWarehouseFilter,
+      onStockWarehouseChange: (e) => this.setState({ stockWarehouseFilter: e.target.value, stockPage: 1 }),
+      stockSortArrows,
+      stockSortByName: () => this.setState(s => ({ stockSortKey: 'name', stockSortDir: s.stockSortKey === 'name' ? (s.stockSortDir === 'asc' ? 'desc' : 'asc') : 'asc', stockPage: 1 })),
+      stockSortByQty: () => this.setState(s => ({ stockSortKey: 'qty', stockSortDir: s.stockSortKey === 'qty' ? (s.stockSortDir === 'asc' ? 'desc' : 'asc') : 'asc', stockPage: 1 })),
+      stockFilteredCount: stockRows.length,
+      stockNoResults: stockRows.length === 0,
+      stockPagedRows,
+      stockCurrentPage, stockTotalPages,
+      stockPrevPage: () => this.setState(s => ({ stockPage: Math.max(1, s.stockPage - 1) })),
+      stockNextPage: () => this.setState(s => ({ stockPage: Math.min(stockTotalPages, s.stockPage + 1) })),
+
+      detailDrug, detailReceiving, detailDispensing,
+      detailReceivingEmpty: detailReceiving.length === 0,
+      detailDispensingEmpty: detailDispensing.length === 0,
+
+      notifMenuOpen: this.state.notifMenuOpen,
+      toggleNotifMenu: () => this.setState(s => {
+        const opening = !s.notifMenuOpen;
+        return { notifMenuOpen: opening, notifSeenTotal: opening ? notifTotal : s.notifSeenTotal };
+      }),
+      closeNotifMenu: () => this.setState({ notifMenuOpen: false }),
+      hasCritical: notifUnseen > 0,
+      criticalCount,
+      notifUnseenCount: notifUnseen,
+      notifItems,
+      noCritical: notifItems.length === 0,
+      notifMovements,
+      noMovements: notifMovements.length === 0,
+      goListFromNotif: () => this.setState({ page: 'list', currentPage: 1, notifMenuOpen: false }),
+
+      thresholds: this.state.thresholds,
+      onThresholdD30Change: (e) => this.setState(s => ({ thresholds: { ...s.thresholds, d30: Number(e.target.value) || 0 } })),
+      onThresholdD90Change: (e) => this.setState(s => ({ thresholds: { ...s.thresholds, d90: Number(e.target.value) || 0 } })),
+      onThresholdD180Change: (e) => this.setState(s => ({ thresholds: { ...s.thresholds, d180: Number(e.target.value) || 0 } })),
+      onThresholdD365Change: (e) => this.setState(s => ({ thresholds: { ...s.thresholds, d365: Number(e.target.value) || 0 } })),
+      saveThresholds: () => {
+        this.showToast('บันทึกเกณฑ์การแจ้งเตือนเรียบร้อย');
+        this.logAudit('ปรับเกณฑ์การแจ้งเตือนเป็น ' + this.state.thresholds.d30 + '/' + this.state.thresholds.d90 + '/' + this.state.thresholds.d180 + '/' + this.state.thresholds.d365 + ' วัน');
+      },
+
+      auditRows,
+      auditEmpty: auditRows.length === 0,
+
+      sheetUrl: this.state.sheetUrl,
+      onSheetUrlChange: (e) => this.setState({ sheetUrl: e.target.value, sheetError: '' }),
+      sheetTabName: this.state.sheetTabName,
+      onSheetTabChange: (e) => this.setState({ sheetTabName: e.target.value, sheetError: '' }),
+      syncInterval: this.state.syncInterval,
+      onSyncIntervalChange: (e) => this.setState({ syncInterval: e.target.value }),
+      syncIntervalLabel: ({ realtime: 'Realtime', '5min': 'ทุก 5 นาที', '1hr': 'ทุก 1 ชั่วโมง', manual: 'ด้วยตนเอง' })[this.state.syncInterval] || 'Realtime',
+      sheetError: this.state.sheetError,
+      sheetConnected: this.state.sheetConnected,
+      sheetNotConnected: !this.state.sheetConnected,
+      sheetStatusLabel: this.state.sheetConnected ? 'เชื่อมต่อแล้ว' : 'ยังไม่เชื่อมต่อ',
+      sheetStatusPillStyle: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: 700, padding: '7px 14px', borderRadius: '999px', background: this.state.sheetConnected ? 'rgba(34,197,94,0.14)' : 'rgba(148,163,184,0.14)', color: this.state.sheetConnected ? '#16a34a' : 'var(--text-dim)' },
+      connectBtnLabel: this.state.sheetConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อกับ Google Sheets',
+      connectBtnStyle: { display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--accent)', color: 'white', border: 'none', padding: '11px 20px', borderRadius: '10px', fontSize: '13.5px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', opacity: this.state.sheetConnecting ? 0.75 : 1 },
+      sheetConnectingSpinStyle: this.state.sheetConnecting ? { display: 'inline-block', animation: 'spin .6s linear infinite' } : { display: 'none' },
+      sheetTestSpinStyle: this.state.sheetTesting ? { display: 'inline-block', animation: 'spin .6s linear infinite' } : { display: 'inline-block' },
+      connectSheet: () => this.connectSheet(),
+      disconnectSheet: () => this.disconnectSheet(),
+      testSheetConnection: () => this.testSheetConnection(),
+      sheetLastSyncLabel: this.state.sheetLastSync ? (fmtThaiDate(this.state.sheetLastSync) + ' ' + String(this.state.sheetLastSync.getHours()).padStart(2,'0') + ':' + String(this.state.sheetLastSync.getMinutes()).padStart(2,'0')) : 'ยังไม่เคยซิงก์',
+
+      newUserName: this.state.newUserName,
+      onNewUserNameChange: (e) => this.setState({ newUserName: e.target.value, newUserError: '' }),
+      newUserUsername: this.state.newUserUsername,
+      onNewUserUsernameChange: (e) => this.setState({ newUserUsername: e.target.value, newUserError: '' }),
+      newUserPassword: this.state.newUserPassword,
+      onNewUserPasswordChange: (e) => this.setState({ newUserPassword: e.target.value, newUserError: '' }),
+      newUserRole: this.state.newUserRole,
+      onNewUserRoleChange: (e) => this.setState({ newUserRole: e.target.value }),
+      newUserError: this.state.newUserError,
+      createUser: () => {
+        const name = this.state.newUserName.trim();
+        const username = this.state.newUserUsername.trim();
+        const password = this.state.newUserPassword.trim();
+        if (!name || !username || !password) {
+          this.setState({ newUserError: 'กรุณากรอกข้อมูลให้ครบทุกช่อง' });
+          return;
+        }
+        if (this.state.users.some(u => u.username === username)) {
+          this.setState({ newUserError: 'ชื่อผู้ใช้งานนี้มีอยู่แล้ว' });
+          return;
+        }
+        const newUser = { name, username, password, role: this.state.newUserRole };
+        this.setState(s => ({ users: [...s.users, newUser], newUserName: '', newUserUsername: '', newUserPassword: '', newUserRole: 'staff', newUserError: '' }));
+        this.showToast('สร้างบัญชีผู้ใช้งาน "' + username + '" เรียบร้อย');
+        this.logAudit('สร้างบัญชีผู้ใช้งานใหม่ "' + username + '" (' + (this.state.newUserRole === 'admin' ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่') + ')');
+      },
+      userCount: this.state.users.length,
+      userRows: this.state.users.map((u, i) => ({
+        idx: i + 1,
+        name: u.name,
+        username: u.username,
+        roleLabel: u.role === 'admin' ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่',
+        roleBadgeStyle: { fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '999px', background: u.role === 'admin' ? 'rgba(139,92,246,0.15)' : 'rgba(59,130,246,0.15)', color: u.role === 'admin' ? '#8b5cf6' : '#3b82f6' },
+        onEdit: () => this.setState({
+          editUserOpen: true,
+          editTargetUsername: u.username,
+          editName: u.name,
+          editUsername: u.username,
+          editPassword: '',
+          editRole: u.role,
+          editUserError: ''
+        }),
+        onDelete: () => {
+          if (u.username === this.state.loggedInUser.username) {
+            this.showToast('ไม่สามารถลบบัญชีที่ใช้งานอยู่ได้');
+            return;
+          }
+          this.setState(s => ({ users: s.users.filter(x => x.username !== u.username) }));
+          this.showToast('ลบบัญชี "' + u.username + '" แล้ว');
+          this.logAudit('ลบบัญชีผู้ใช้งาน "' + u.username + '"');
+        }
+      })),
+
+      editUserOpen: this.state.editUserOpen,
+      editName: this.state.editName,
+      onEditNameChange: (e) => this.setState({ editName: e.target.value, editUserError: '' }),
+      editUsername: this.state.editUsername,
+      onEditUsernameChange: (e) => this.setState({ editUsername: e.target.value, editUserError: '' }),
+      editPassword: this.state.editPassword,
+      onEditPasswordChange: (e) => this.setState({ editPassword: e.target.value, editUserError: '' }),
+      editRole: this.state.editRole,
+      onEditRoleChange: (e) => this.setState({ editRole: e.target.value }),
+      editUserError: this.state.editUserError,
+      closeEditUser: () => this.setState({ editUserOpen: false }),
+      saveEditUser: () => {
+        const name = this.state.editName.trim();
+        const username = this.state.editUsername.trim();
+        if (!name || !username) {
+          this.setState({ editUserError: 'กรุณากรอกชื่อและชื่อผู้ใช้งาน' });
+          return;
+        }
+        const clash = this.state.users.some(x => x.username === username && x.username !== this.state.editTargetUsername);
+        if (clash) {
+          this.setState({ editUserError: 'ชื่อผู้ใช้งานนี้มีอยู่แล้ว' });
+          return;
+        }
+        const target = this.state.editTargetUsername;
+        const wasSelf = this.state.loggedInUser && this.state.loggedInUser.username === target;
+        let updatedUser = null;
+        const updatedUsers = this.state.users.map(x => {
+          if (x.username !== target) return x;
+          updatedUser = { ...x, name, username, role: this.state.editRole, password: this.state.editPassword.trim() ? this.state.editPassword.trim() : x.password };
+          return updatedUser;
+        });
+        this.setState({
+          users: updatedUsers,
+          editUserOpen: false,
+          loggedInUser: wasSelf ? updatedUser : this.state.loggedInUser
+        });
+        this.showToast('บันทึกข้อมูลผู้ใช้งาน "' + username + '" แล้ว');
+        this.logAudit('แก้ไขข้อมูลบัญชีผู้ใช้งาน "' + username + '"');
+      }
+    };
+  }
+
+  setSort(key) {
+    this.setState(s => ({
+      sortKey: key,
+      sortDir: s.sortKey === key ? (s.sortDir === 'asc' ? 'desc' : 'asc') : 'asc',
+      currentPage: 1
+    }));
+  }
+}
+
+</script>
+</body>
+</html>

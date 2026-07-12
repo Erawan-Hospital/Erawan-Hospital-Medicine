@@ -1,0 +1,10 @@
+{
+  "name": "erawan-ya-stock",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ระบบแจ้งเตือนยาใกล้หมดอายุและคลังยา - โรงพยาบาลเอราวัณ จังหวัดเลย",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}
