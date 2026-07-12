@@ -207,8 +207,8 @@
       <div style="display:flex; flex-direction:column; gap:20px;">
 
         <div style="display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 18px; font-size:13px;">
-          <span style="width:9px; height:9px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 4px rgba(34,197,94,0.15); flex-shrink:0;"></span>
-          <span style="font-weight:600;">ฐานข้อมูล: เชื่อมต่อสำเร็จ</span>
+          <span style="width:9px; height:9px; border-radius:50%; background:{{ dbDotColor }}; box-shadow:0 0 0 4px rgba(34,197,94,0.15); flex-shrink:0;"></span>
+          <span style="font-weight:600;">{{ dbStatusLabel }}</span>
           <span style="color:var(--text-dim);">·</span>
           <span style="color:var(--text-dim);">📡 ส่งล่าสุด: {{ lastSyncLabel }}</span>
         </div>
@@ -422,6 +422,7 @@
                 <th style="padding:12px 10px; font-weight:600;">เวลา</th>
                 <th onClick="{{ recSortByName }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">ชื่อยา {{ recSortArrows.name }}</th>
                 <th style="padding:12px 10px; font-weight:600;">Lot เลขที่</th>
+                <th style="padding:12px 10px; font-weight:600;">วันหมดอายุ</th>
                 <th onClick="{{ recSortByQty }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">จำนวนรับเข้า {{ recSortArrows.qty }}</th>
                 <th style="padding:12px 10px; font-weight:600;">ผู้รับเข้า</th>
                 <th style="padding:12px 20px; font-weight:600;">รับเข้าจาก</th>
@@ -435,13 +436,17 @@
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.time }}</td>
                   <td style="padding:12px 10px; font-weight:600;">{{ row.name }}</td>
                   <td style="padding:12px 10px; color:var(--text-dim); font-variant-numeric:tabular-nums;">{{ row.lot }}</td>
+                  <td style="padding:12px 10px;">
+                    <div style="font-variant-numeric:tabular-nums;">{{ row.expiryLabel }}</div>
+                    <div style="font-size:11.5px; color:{{ row.expColor }}; font-weight:700;">{{ row.daysLabel }}</div>
+                  </td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:#16a34a; font-weight:700;">+{{ row.qty }} {{ row.unit }}</td>
                   <td style="padding:12px 10px;">{{ row.person }}</td>
                   <td style="padding:12px 20px;"><span style="background:var(--card-2); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:600;">{{ row.place }}</span></td>
                 </tr>
               </sc-for>
               <sc-if value="{{ recNoResults }}" hint-placeholder-val="{{ false }}">
-                <tr><td colspan="8" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
+                <tr><td colspan="9" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
               </sc-if>
             </tbody>
           </table>
@@ -476,6 +481,7 @@
                 <th style="padding:12px 10px; font-weight:600;">เวลา</th>
                 <th onClick="{{ dispSortByName }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">ชื่อยา {{ dispSortArrows.name }}</th>
                 <th style="padding:12px 10px; font-weight:600;">Lot เลขที่</th>
+                <th style="padding:12px 10px; font-weight:600;">วันหมดอายุ</th>
                 <th onClick="{{ dispSortByQty }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">จำนวนจ่ายออก {{ dispSortArrows.qty }}</th>
                 <th style="padding:12px 10px; font-weight:600;">ผู้จ่ายออก</th>
                 <th style="padding:12px 20px; font-weight:600;">จ่ายออกไปที่</th>
@@ -489,13 +495,17 @@
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.time }}</td>
                   <td style="padding:12px 10px; font-weight:600;">{{ row.name }}</td>
                   <td style="padding:12px 10px; color:var(--text-dim); font-variant-numeric:tabular-nums;">{{ row.lot }}</td>
+                  <td style="padding:12px 10px;">
+                    <div style="font-variant-numeric:tabular-nums;">{{ row.expiryLabel }}</div>
+                    <div style="font-size:11.5px; color:{{ row.expColor }}; font-weight:700;">{{ row.daysLabel }}</div>
+                  </td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:#ef4444; font-weight:700;">-{{ row.qty }} {{ row.unit }}</td>
                   <td style="padding:12px 10px;">{{ row.person }}</td>
                   <td style="padding:12px 20px;"><span style="background:var(--card-2); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:600;">{{ row.place }}</span></td>
                 </tr>
               </sc-for>
               <sc-if value="{{ dispNoResults }}" hint-placeholder-val="{{ false }}">
-                <tr><td colspan="8" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
+                <tr><td colspan="9" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
               </sc-if>
             </tbody>
           </table>
@@ -698,6 +708,7 @@
                 <th style="padding:10px 20px; font-weight:600;">วันที่</th>
                 <th style="padding:10px; font-weight:600;">เวลา</th>
                 <th style="padding:10px; font-weight:600;">Lot เลขที่</th>
+                <th style="padding:10px; font-weight:600;">วันหมดอายุ</th>
                 <th style="padding:10px; font-weight:600;">จำนวน</th>
                 <th style="padding:10px; font-weight:600;">ผู้รับเข้า</th>
                 <th style="padding:10px 20px; font-weight:600;">รับเข้าจาก</th>
@@ -709,13 +720,14 @@
                   <td style="padding:11px 20px; font-variant-numeric:tabular-nums;">{{ row.dateLabel }}</td>
                   <td style="padding:11px 10px; color:var(--text-dim);">{{ row.time }}</td>
                   <td style="padding:11px 10px; color:var(--text-dim);">{{ row.lot }}</td>
+                  <td style="padding:11px 10px; font-variant-numeric:tabular-nums; color:{{ row.expColor }};">{{ row.expiryLabel }}</td>
                   <td style="padding:11px 10px; color:#16a34a; font-weight:700;">+{{ row.qty }} {{ row.unit }}</td>
                   <td style="padding:11px 10px;">{{ row.person }}</td>
                   <td style="padding:11px 20px;">{{ row.place }}</td>
                 </tr>
               </sc-for>
               <sc-if value="{{ detailReceivingEmpty }}" hint-placeholder-val="{{ false }}">
-                <tr><td colspan="6" style="padding:30px; text-align:center; color:var(--text-dim);">ไม่มีประวัติการรับเข้า</td></tr>
+                <tr><td colspan="7" style="padding:30px; text-align:center; color:var(--text-dim);">ไม่มีประวัติการรับเข้า</td></tr>
               </sc-if>
             </tbody>
           </table>
@@ -731,6 +743,7 @@
                 <th style="padding:10px 20px; font-weight:600;">วันที่</th>
                 <th style="padding:10px; font-weight:600;">เวลา</th>
                 <th style="padding:10px; font-weight:600;">Lot เลขที่</th>
+                <th style="padding:10px; font-weight:600;">วันหมดอายุ</th>
                 <th style="padding:10px; font-weight:600;">จำนวน</th>
                 <th style="padding:10px; font-weight:600;">ผู้จ่ายออก</th>
                 <th style="padding:10px 20px; font-weight:600;">จ่ายออกไปที่</th>
@@ -742,13 +755,14 @@
                   <td style="padding:11px 20px; font-variant-numeric:tabular-nums;">{{ row.dateLabel }}</td>
                   <td style="padding:11px 10px; color:var(--text-dim);">{{ row.time }}</td>
                   <td style="padding:11px 10px; color:var(--text-dim);">{{ row.lot }}</td>
+                  <td style="padding:11px 10px; font-variant-numeric:tabular-nums; color:{{ row.expColor }};">{{ row.expiryLabel }}</td>
                   <td style="padding:11px 10px; color:#ef4444; font-weight:700;">-{{ row.qty }} {{ row.unit }}</td>
                   <td style="padding:11px 10px;">{{ row.person }}</td>
                   <td style="padding:11px 20px;">{{ row.place }}</td>
                 </tr>
               </sc-for>
               <sc-if value="{{ detailDispensingEmpty }}" hint-placeholder-val="{{ false }}">
-                <tr><td colspan="6" style="padding:30px; text-align:center; color:var(--text-dim);">ไม่มีประวัติการจ่ายออก</td></tr>
+                <tr><td colspan="7" style="padding:30px; text-align:center; color:var(--text-dim);">ไม่มีประวัติการจ่ายออก</td></tr>
               </sc-if>
             </tbody>
           </table>
@@ -1079,6 +1093,10 @@ const LOGIN_WATERMARKS = Array.from({ length: 26 }).map((_, i) => {
 const THAI_DAYS = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
 const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 
+// ===== Live data feed (Google Sheet via /api/data on Vercel) =====
+const API_URL = '/api/data';
+const SYNC_INTERVAL_MS = 5 * 60 * 1000; // auto-refresh every 5 minutes
+
 class Component extends DCLogic {
   state = {
     page: 'dashboard',
@@ -1097,6 +1115,7 @@ class Component extends DCLogic {
     toast: null,
     previewOpen: false,
     refreshing: false,
+    dataStatus: 'loading', dataError: '', lastSync: null,
     autoSendEnabled: true,
     loggedInUser: null,
     userMenuOpen: false,
@@ -1194,12 +1213,94 @@ class Component extends DCLogic {
     this._onResize = () => this.setState({ viewportWidth: window.innerWidth });
     window.addEventListener('resize', this._onResize);
     this.setState({ viewportWidth: window.innerWidth });
+    this.loadData(false);
+    this._syncTimer = setInterval(() => this.loadData(false), SYNC_INTERVAL_MS);
   }
 
   componentWillUnmount() {
     clearInterval(this._clockTimer);
+    clearInterval(this._syncTimer);
     clearTimeout(this._toastTimer);
     window.removeEventListener('resize', this._onResize);
+  }
+
+  // Map raw Sheet rows -> internal records, computing the derived fields render() expects.
+  ingest(payload) {
+    const today = new Date();
+    const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const toDate = (v) => {
+      if (v === null || v === undefined || v === '') return null;
+      const d = new Date(v);
+      return isNaN(d.getTime()) ? null : d;
+    };
+    const num = (v) => { const n = parseFloat(String(v == null ? '' : v).replace(/[, ]/g, '')); return isNaN(n) ? 0 : n; };
+
+    const meds = Array.isArray(payload.medicines) ? payload.medicines : [];
+    this.allDrugs = meds.map((r, i) => {
+      const expiry = toDate(r.expiry) || new Date(midnight.getTime());
+      const daysLeft = Math.round((expiry.getTime() - midnight.getTime()) / 86400000);
+      return {
+        idx: i + 1,
+        code: r.code || ('YA-' + String(1001 + i).padStart(5, '0')),
+        name: r.name || '-',
+        unit: r.unit || '',
+        warehouse: r.warehouse || '-',
+        lot: r.lot || '-',
+        expiry, daysLeft,
+        expiryLabel: fmtThaiDate(expiry),
+        daysLabel: daysLeft < 0 ? ('หมดอายุแล้ว ' + Math.abs(daysLeft) + ' วัน') : ('เหลือ ' + daysLeft + ' วัน'),
+        qty: num(r.qty)
+      };
+    });
+
+    const mapLog = (arr) => (Array.isArray(arr) ? arr : []).map((r, i) => {
+      const date = toDate(r.date) || new Date(midnight.getTime());
+      let time = r.time || '';
+      if (!time && r.date && String(r.date).indexOf('T') !== -1) {
+        time = String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+      }
+      const expiry = toDate(r.expiry);
+      let daysLeft = null, expiryLabel = '-', daysLabel = '';
+      if (expiry) {
+        daysLeft = Math.round((expiry.getTime() - midnight.getTime()) / 86400000);
+        expiryLabel = fmtThaiDate(expiry);
+        daysLabel = daysLeft < 0 ? ('หมดอายุแล้ว ' + Math.abs(daysLeft) + ' วัน') : ('เหลือ ' + daysLeft + ' วัน');
+      }
+      return {
+        idx: i + 1, date, dateLabel: fmtThaiDate(date), time,
+        name: r.name || '-', unit: r.unit || '',
+        qty: num(r.qty), lot: r.lot || '-',
+        expiry, daysLeft, expiryLabel, daysLabel,
+        person: r.person || '-', place: r.place || '-'
+      };
+    });
+    this.receivingLogs = mapLog(payload.receiving);
+    this.dispensingLogs = mapLog(payload.dispensing);
+
+    return Array.isArray(payload.users) ? payload.users.filter(u => u && u.username) : [];
+  }
+
+  loadData(manual) {
+    if (manual) this.setState({ refreshing: true });
+    fetch(API_URL, { cache: 'no-store' })
+      .then(r => r.json())
+      .then(payload => {
+        if (!payload || payload.ok === false) throw new Error((payload && payload.error) || 'ไม่พบข้อมูล');
+        const users = this.ingest(payload);
+        const now = new Date();
+        const syncLabel = fmtThaiDate(now) + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+        this.setState(s => ({
+          dataStatus: 'ok', dataError: '', lastSync: syncLabel,
+          sheetLastSync: now, sheetConnected: true, refreshing: false,
+          users: users.length ? users : s.users
+        }));
+        if (manual) this.showToast('อัปเดตข้อมูลจากชีตเรียบร้อย');
+      })
+      .catch(err => {
+        const msg = (err && err.message) ? err.message : String(err);
+        this.setState({ dataStatus: 'error', dataError: msg, refreshing: false });
+        if (manual) this.showToast('เชื่อมต่อชีตไม่สำเร็จ — ' + msg);
+      });
   }
 
   showToast(msg) {
@@ -1229,6 +1330,11 @@ class Component extends DCLogic {
       return 0;
     });
     return rows.map((r, i) => ({ ...r, idx: i + 1, status: this.getStatus(r.daysLeft) }));
+  }
+
+  // Attach the expiry status color (matches the drug-list palette) to a log row.
+  withExpColor(r) {
+    return { ...r, expColor: (r.daysLeft === null || r.daysLeft === undefined) ? 'var(--text-dim)' : this.getStatus(r.daysLeft).solid };
   }
 
   getFilteredLog(logs, searchKey, sortKey, sortDir) {
@@ -1308,10 +1414,20 @@ class Component extends DCLogic {
 
   testSheetConnection() {
     this.setState({ sheetTesting: true });
-    setTimeout(() => {
-      this.setState({ sheetTesting: false, sheetLastSync: new Date() });
-      this.showToast('ทดสอบการเชื่อมต่อสำเร็จ — อ่านข้อมูลจากชีตได้ปกติ');
-    }, 900);
+    fetch(API_URL, { cache: 'no-store' })
+      .then(r => r.json())
+      .then(payload => {
+        if (!payload || payload.ok === false) throw new Error((payload && payload.error) || 'ไม่พบข้อมูล');
+        this.ingest(payload);
+        this.loadData(false);
+        this.setState({ sheetTesting: false, sheetLastSync: new Date() });
+        const n = (payload.medicines || []).length;
+        this.showToast('ทดสอบการเชื่อมต่อสำเร็จ — อ่านข้อมูลจากชีตได้ ' + n + ' รายการ');
+      })
+      .catch(err => {
+        this.setState({ sheetTesting: false });
+        this.showToast('ทดสอบไม่สำเร็จ — ' + ((err && err.message) || err));
+      });
   }
 
   goListWithFilter(filters, label) {
@@ -1557,8 +1673,8 @@ class Component extends DCLogic {
       const matches = this.allDrugs.filter(r => r.name === selName);
       const qtySum = matches.reduce((a, r) => a + r.qty, 0);
       const whSet = new Set(matches.map(r => r.warehouse));
-      detailReceiving = this.receivingLogs.filter(r => r.name === selName).sort((a, b) => b.date - a.date);
-      detailDispensing = this.dispensingLogs.filter(r => r.name === selName).sort((a, b) => b.date - a.date);
+      detailReceiving = this.receivingLogs.filter(r => r.name === selName).sort((a, b) => b.date - a.date).map(r => this.withExpColor(r));
+      detailDispensing = this.dispensingLogs.filter(r => r.name === selName).sort((a, b) => b.date - a.date).map(r => this.withExpColor(r));
       detailDrug = {
         name: selName,
         qty: qtySum,
@@ -1595,12 +1711,12 @@ class Component extends DCLogic {
     const recFiltered = this.getFilteredLog(this.receivingLogs, this.state.recSearch, this.state.recSortKey, this.state.recSortDir);
     const recTotalPages = Math.max(1, Math.ceil(recFiltered.length / pageSize));
     const recCurrentPage = Math.min(this.state.recPage, recTotalPages);
-    const recPagedRows = recFiltered.slice((recCurrentPage - 1) * pageSize, recCurrentPage * pageSize);
+    const recPagedRows = recFiltered.slice((recCurrentPage - 1) * pageSize, recCurrentPage * pageSize).map(r => this.withExpColor(r));
 
     const dispFiltered = this.getFilteredLog(this.dispensingLogs, this.state.dispSearch, this.state.dispSortKey, this.state.dispSortDir);
     const dispTotalPages = Math.max(1, Math.ceil(dispFiltered.length / pageSize));
     const dispCurrentPage = Math.min(this.state.dispPage, dispTotalPages);
-    const dispPagedRows = dispFiltered.slice((dispCurrentPage - 1) * pageSize, dispCurrentPage * pageSize);
+    const dispPagedRows = dispFiltered.slice((dispCurrentPage - 1) * pageSize, dispCurrentPage * pageSize).map(r => this.withExpColor(r));
 
     const autoSendOn = this.state.autoSendEnabled;
 
@@ -1666,6 +1782,8 @@ class Component extends DCLogic {
       closeSidebar: () => this.setState({ sidebarOpen: false }),
       clockTime, clockDate,
       lastSyncLabel: this.state.lastSync || (clockDate.split(' ').slice(0,3).join(' ') + ' ' + clockTime.slice(0,5)),
+      dbDotColor: this.state.dataStatus === 'ok' ? '#22c55e' : (this.state.dataStatus === 'error' ? '#ef4444' : '#f59e0b'),
+      dbStatusLabel: this.state.dataStatus === 'ok' ? 'ฐานข้อมูล: เชื่อมต่อสำเร็จ' : (this.state.dataStatus === 'error' ? 'ฐานข้อมูล: เชื่อมต่อไม่สำเร็จ (แสดงข้อมูลตัวอย่าง)' : 'ฐานข้อมูล: กำลังเชื่อมต่อ…'),
       counts: { totalItems, expired: counts.expired },
       summaryCards,
       criticalTop10,
@@ -1687,12 +1805,7 @@ class Component extends DCLogic {
         this.logAudit((nowOn ? 'เปิด' : 'ปิด') + 'การส่ง LINE อัตโนมัติทุกวัน 07:00 น.');
       },
       refreshSpinStyle: this.state.refreshing ? { display: 'inline-block', animation: 'spin .6s linear infinite' } : { display: 'inline-block' },
-      refreshData: () => {
-        this.setState({ refreshing: true });
-        this.injectSimulatedMovement();
-        this.showToast('รีเฟรชข้อมูลเรียบร้อย');
-        setTimeout(() => this.setState({ refreshing: false }), 700);
-      },
+      refreshData: () => { this.loadData(true); },
       toast: this.state.toast,
 
       search: this.state.search,
