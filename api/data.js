@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       sb('users?select=name,username,role&order=id.asc')
     ]);
 
-    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+    res.setHeader('Cache-Control', 'no-store');
     res.status(200).json({
       ok: true,
       syncedAt: new Date().toISOString(),

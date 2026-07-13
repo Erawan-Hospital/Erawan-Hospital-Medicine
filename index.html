@@ -1406,16 +1406,29 @@ class Component extends DCLogic {
   }
 
   // Live updates: any insert/update/delete on these tables refreshes the app
-  // instantly for everyone, instead of waiting for the next poll.
+  // instantly for everyone, instead of waiting for the next poll. A single
+  // receiving/dispensing action touches 2 tables (the log + the medicine's
+  // qty), so events are debounced into one reload instead of firing twice.
+  scheduleReload() {
+    clearTimeout(this._reloadDebounce);
+    this._reloadDebounce = setTimeout(() => this.loadData(false), 150);
+  }
+
   startRealtime() {
     if (!window.supabase || SUPABASE_ANON_KEY.indexOf('REPLACE') === 0) return;
-    this._sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    if (!this._sb) this._sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     this._sbChannel = this._sb
       .channel('erawan-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'medicines' }, () => this.loadData(false))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'receiving_logs' }, () => this.loadData(false))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'dispensing_logs' }, () => this.loadData(false))
-      .subscribe();
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'medicines' }, () => this.scheduleReload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'receiving_logs' }, () => this.scheduleReload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'dispensing_logs' }, () => this.scheduleReload())
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          if (this._sbChannel) this._sb.removeChannel(this._sbChannel);
+          clearTimeout(this._realtimeRetryTimer);
+          this._realtimeRetryTimer = setTimeout(() => this.startRealtime(), 3000);
+        }
+      });
   }
 
   restoreSession() {
@@ -1508,6 +1521,8 @@ class Component extends DCLogic {
   }
 
   loadData(manual) {
+    if (this._loadInFlight) { this._loadQueued = true; return; }
+    this._loadInFlight = true;
     if (manual) this.setState({ refreshing: true });
     const prevRecvIds = new Set(this.receivingLogs.map(r => r.id).filter(id => id != null));
     const prevDispIds = new Set(this.dispensingLogs.map(r => r.id).filter(id => id != null));
@@ -1545,6 +1560,10 @@ class Component extends DCLogic {
         const msg = (err && err.message) ? err.message : String(err);
         this.setState({ dataStatus: 'error', dataError: msg, refreshing: false });
         if (manual) this.showToast('เชื่อมต่อชีตไม่สำเร็จ — ' + msg);
+      })
+      .finally(() => {
+        this._loadInFlight = false;
+        if (this._loadQueued) { this._loadQueued = false; this.loadData(false); }
       });
   }
 
