@@ -45,7 +45,7 @@ export default async function handler(req, res) {
         body: {
           log_date: log_date || new Date().toISOString().slice(0, 10),
           log_time: log_time || null,
-          name, unit, qty: qtyNum, lot, expiry: expiry || null, person, place
+          name, unit: unit || existing.unit, qty: qtyNum, lot, expiry: existing.expiry || expiry || null, person, place
         }
       });
 

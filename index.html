@@ -1015,7 +1015,12 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">ชื่อยา</div>
-              <input type="text" value="{{ recvName }}" onChange="{{ onRecvNameChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <input type="text" list="recvNameOptions" value="{{ recvName }}" onChange="{{ onRecvNameChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <datalist id="recvNameOptions">
+                <sc-for list="{{ medNameOptions }}" as="opt" hint-placeholder-count="5">
+                  <option value="{{ opt }}"></option>
+                </sc-for>
+              </datalist>
             </div>
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">หน่วยนับ</div>
@@ -1025,7 +1030,11 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">คลัง</div>
-              <input type="text" value="{{ recvWarehouse }}" onChange="{{ onRecvWarehouseChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <select value="{{ recvWarehouse }}" onChange="{{ onRecvWarehouseChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit; cursor:pointer;">
+                <sc-for list="{{ warehouseSelectOptions }}" as="wh" hint-placeholder-count="3">
+                  <option value="{{ wh }}">{{ wh }}</option>
+                </sc-for>
+              </select>
             </div>
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">เลขล็อต</div>
@@ -1045,11 +1054,16 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">ผู้รับเข้า</div>
-              <input type="text" value="{{ recvPerson }}" onChange="{{ onRecvPersonChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <input type="text" value="{{ recvPerson }}" disabled="{{ true }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text-dim); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
             </div>
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">รับเข้าจาก</div>
-              <input type="text" value="{{ recvPlace }}" onChange="{{ onRecvPlaceChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <input type="text" list="recvPlaceOptions" value="{{ recvPlace }}" onChange="{{ onRecvPlaceChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <datalist id="recvPlaceOptions">
+                <sc-for list="{{ recvPlaceOptions }}" as="opt" hint-placeholder-count="5">
+                  <option value="{{ opt }}"></option>
+                </sc-for>
+              </datalist>
             </div>
           </div>
           <sc-if value="{{ recvError }}" hint-placeholder-val="{{ false }}">
@@ -1073,7 +1087,12 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">ชื่อยา</div>
-              <input type="text" value="{{ dispName }}" onChange="{{ onDispNameChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <input type="text" list="dispNameOptions" value="{{ dispName }}" onChange="{{ onDispNameChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <datalist id="dispNameOptions">
+                <sc-for list="{{ medNameOptions }}" as="opt" hint-placeholder-count="5">
+                  <option value="{{ opt }}"></option>
+                </sc-for>
+              </datalist>
             </div>
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">หน่วยนับ</div>
@@ -1093,11 +1112,16 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">ผู้จ่ายออก</div>
-              <input type="text" value="{{ dispPerson }}" onChange="{{ onDispPersonChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <input type="text" value="{{ dispPerson }}" disabled="{{ true }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text-dim); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
             </div>
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">จ่ายออกไปที่</div>
-              <input type="text" value="{{ dispPlace }}" onChange="{{ onDispPlaceChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <input type="text" list="dispPlaceOptionsList" value="{{ dispPlace }}" onChange="{{ onDispPlaceChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <datalist id="dispPlaceOptionsList">
+                <sc-for list="{{ dispPlaceOptions }}" as="opt" hint-placeholder-count="5">
+                  <option value="{{ opt }}"></option>
+                </sc-for>
+              </datalist>
             </div>
           </div>
           <sc-if value="{{ dispError }}" hint-placeholder-val="{{ false }}">
@@ -1233,7 +1257,7 @@ const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','ม�
 
 // ===== Live data feed (Supabase via /api/data on Vercel) =====
 const API_URL = '/api/data';
-const SYNC_INTERVAL_MS = 5 * 60 * 1000; // auto-refresh every 5 minutes
+const SYNC_INTERVAL_MS = 20 * 1000; // auto-refresh every 20 seconds, so changes from other staff show up without a manual refresh
 
 class Component extends DCLogic {
   state = {
@@ -1358,6 +1382,24 @@ class Component extends DCLogic {
     this.setState({ viewportWidth: window.innerWidth });
     this.loadData(false);
     this._syncTimer = setInterval(() => this.loadData(false), SYNC_INTERVAL_MS);
+    this.restoreSession();
+  }
+
+  restoreSession() {
+    let saved;
+    try { saved = JSON.parse(localStorage.getItem('erawan_auth') || 'null'); } catch { saved = null; }
+    if (!saved || !saved.username || !saved.password) return;
+    fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(saved)
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.ok === false) { localStorage.removeItem('erawan_auth'); return; }
+        this.setState({ loggedInUser: data.user });
+      })
+      .catch(() => {});
   }
 
   componentWillUnmount() {
@@ -1517,9 +1559,14 @@ class Component extends DCLogic {
       .catch(err => this.setState({ medFormError: err.message, medFormSaving: false }));
   }
 
+  lockLotPrefix(v) {
+    if (v.toUpperCase().startsWith('LOT-')) return 'LOT-' + v.slice(4);
+    return 'LOT-' + v.replace(/^LOT-?/i, '');
+  }
+
   openRecvForm() {
     this.setState({
-      recvFormOpen: true, recvName: '', recvUnit: '', recvWarehouse: '', recvLot: '', recvExpiry: '',
+      recvFormOpen: true, recvName: '', recvUnit: '', recvWarehouse: WAREHOUSES[0], recvLot: 'LOT-', recvExpiry: '',
       recvQty: '', recvPerson: this.state.loggedInUser ? this.state.loggedInUser.name : '', recvPlace: '',
       recvError: '', recvSaving: false
     });
@@ -1530,11 +1577,11 @@ class Component extends DCLogic {
     const name = s.recvName.trim();
     const lot = s.recvLot.trim();
     const qty = Number(s.recvQty);
-    if (!name || !lot || !qty) { this.setState({ recvError: 'กรุณากรอกชื่อยา เลขล็อต และจำนวนให้ครบ' }); return; }
+    if (!name || lot === 'LOT-' || !lot || !qty) { this.setState({ recvError: 'กรุณากรอกชื่อยา เลขล็อต และจำนวนให้ครบ' }); return; }
     this.setState({ recvSaving: true, recvError: '' });
     this.adminApi('/api/receiving', 'POST', {
       name, unit: s.recvUnit.trim(), warehouse: s.recvWarehouse.trim(), lot,
-      expiry: s.recvExpiry || null, qty, person: s.recvPerson.trim(), place: s.recvPlace.trim()
+      expiry: s.recvExpiry || null, qty, person: this.state.loggedInUser.name, place: s.recvPlace.trim()
     })
       .then(() => {
         this.setState({ recvFormOpen: false, recvSaving: false });
@@ -1547,7 +1594,7 @@ class Component extends DCLogic {
 
   openDispForm() {
     this.setState({
-      dispFormOpen: true, dispName: '', dispUnit: '', dispLot: '', dispQty: '',
+      dispFormOpen: true, dispName: '', dispUnit: '', dispLot: 'LOT-', dispQty: '',
       dispPerson: this.state.loggedInUser ? this.state.loggedInUser.name : '', dispPlace: '',
       dispError: '', dispSaving: false
     });
@@ -1558,10 +1605,10 @@ class Component extends DCLogic {
     const name = s.dispName.trim();
     const lot = s.dispLot.trim();
     const qty = Number(s.dispQty);
-    if (!name || !lot || !qty) { this.setState({ dispError: 'กรุณากรอกชื่อยา เลขล็อต และจำนวนให้ครบ' }); return; }
+    if (!name || lot === 'LOT-' || !lot || !qty) { this.setState({ dispError: 'กรุณากรอกชื่อยา เลขล็อต และจำนวนให้ครบ' }); return; }
     this.setState({ dispSaving: true, dispError: '' });
     this.adminApi('/api/dispensing', 'POST', {
-      name, unit: s.dispUnit.trim(), lot, qty, person: s.dispPerson.trim(), place: s.dispPlace.trim()
+      name, unit: s.dispUnit.trim(), lot, qty, person: this.state.loggedInUser.name, place: s.dispPlace.trim()
     })
       .then(() => {
         this.setState({ dispFormOpen: false, dispSaving: false });
@@ -1717,6 +1764,7 @@ class Component extends DCLogic {
           return;
         }
         this.setState({ loggedInUser: data.user, loginError: '', loginSubmitting: false, page: 'dashboard' });
+        try { localStorage.setItem('erawan_auth', JSON.stringify({ username: u, password: p })); } catch {}
         this.logAudit(data.user.name + ' เข้าสู่ระบบ');
         this.loadData(false);
       })
@@ -2029,7 +2077,10 @@ class Component extends DCLogic {
       goBackFromDetail: () => this.setState(s => ({ page: s.pageBeforeDetail || 'dashboard' })),
       isDrugDetail, isSettings, isDbConnect,
       comingSoon: () => this.showToast('ฟีเจอร์นี้อยู่ระหว่างการพัฒนา'),
-      doLogout: () => this.setState({ loggedInUser: null, loginUser: '', loginPass: '', page: 'dashboard', userMenuOpen: false }),
+      doLogout: () => {
+        try { localStorage.removeItem('erawan_auth'); } catch {}
+        this.setState({ loggedInUser: null, loginUser: '', loginPass: '', page: 'dashboard', userMenuOpen: false });
+      },
       userMenuOpen: this.state.userMenuOpen,
       toggleUserMenu: () => this.setState(s => ({ userMenuOpen: !s.userMenuOpen })),
       closeUserMenu: () => this.setState({ userMenuOpen: false }),
@@ -2209,13 +2260,12 @@ class Component extends DCLogic {
       recvWarehouse: this.state.recvWarehouse,
       onRecvWarehouseChange: (e) => this.setState({ recvWarehouse: e.target.value, recvError: '' }),
       recvLot: this.state.recvLot,
-      onRecvLotChange: (e) => this.setState({ recvLot: e.target.value, recvError: '' }),
+      onRecvLotChange: (e) => this.setState({ recvLot: this.lockLotPrefix(e.target.value), recvError: '' }),
       recvExpiry: this.state.recvExpiry,
       onRecvExpiryChange: (e) => this.setState({ recvExpiry: e.target.value, recvError: '' }),
       recvQty: this.state.recvQty,
       onRecvQtyChange: (e) => this.setState({ recvQty: e.target.value, recvError: '' }),
       recvPerson: this.state.recvPerson,
-      onRecvPersonChange: (e) => this.setState({ recvPerson: e.target.value, recvError: '' }),
       recvPlace: this.state.recvPlace,
       onRecvPlaceChange: (e) => this.setState({ recvPlace: e.target.value, recvError: '' }),
       recvError: this.state.recvError,
@@ -2223,6 +2273,10 @@ class Component extends DCLogic {
       openRecvForm: () => this.openRecvForm(),
       closeRecvForm: () => this.setState({ recvFormOpen: false }),
       saveRecvForm: () => this.saveRecvForm(),
+      warehouseSelectOptions: WAREHOUSES,
+      medNameOptions: Array.from(new Set(this.allDrugs.map(d => d.name))).sort(),
+      recvPlaceOptions: Array.from(new Set([...RECEIVE_SOURCES, ...this.receivingLogs.map(r => r.place)])).filter(Boolean),
+      dispPlaceOptions: Array.from(new Set([...DISPENSE_DESTINATIONS, ...this.dispensingLogs.map(r => r.place)])).filter(Boolean),
 
       // ---- Add Dispensing entry modal ----
       dispFormOpen: this.state.dispFormOpen,
@@ -2231,11 +2285,10 @@ class Component extends DCLogic {
       dispUnit: this.state.dispUnit,
       onDispUnitChange: (e) => this.setState({ dispUnit: e.target.value, dispError: '' }),
       dispLot: this.state.dispLot,
-      onDispLotChange: (e) => this.setState({ dispLot: e.target.value, dispError: '' }),
+      onDispLotChange: (e) => this.setState({ dispLot: this.lockLotPrefix(e.target.value), dispError: '' }),
       dispQty: this.state.dispQty,
       onDispQtyChange: (e) => this.setState({ dispQty: e.target.value, dispError: '' }),
       dispPerson: this.state.dispPerson,
-      onDispPersonChange: (e) => this.setState({ dispPerson: e.target.value, dispError: '' }),
       dispPlace: this.state.dispPlace,
       onDispPlaceChange: (e) => this.setState({ dispPlace: e.target.value, dispError: '' }),
       dispError: this.state.dispError,
@@ -2341,6 +2394,9 @@ class Component extends DCLogic {
                 ? { ...this.state.loggedInUser, name, username, role, password: newPassword || this.state.loggedInUser.password }
                 : this.state.loggedInUser
             });
+            if (wasSelf) {
+              try { localStorage.setItem('erawan_auth', JSON.stringify({ username, password: newPassword || this.state.loggedInUser.password })); } catch {}
+            }
             this.showToast('บันทึกข้อมูลผู้ใช้งาน "' + username + '" แล้ว');
             this.logAudit('แก้ไขข้อมูลบัญชีผู้ใช้งาน "' + username + '"');
             this.loadData(false);
