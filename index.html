@@ -10,6 +10,7 @@
 <helmet>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
     html, body { margin: 0; max-width: 100%; overflow-x: hidden; }
@@ -1257,7 +1258,12 @@ const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','ม�
 
 // ===== Live data feed (Supabase via /api/data on Vercel) =====
 const API_URL = '/api/data';
-const SYNC_INTERVAL_MS = 5 * 1000; // auto-refresh every 5 seconds, so changes from other staff show up without a manual refresh
+const SYNC_INTERVAL_MS = 60 * 1000; // slow fallback poll — Realtime below handles instant updates; this only covers a dropped websocket
+const SESSION_MAX_AGE_MS = 4 * 60 * 60 * 1000; // auto-logout after 4 hours
+
+// Public by design: protected by Row Level Security, not a secret. See supabase/enable_realtime.sql.
+const SUPABASE_URL = 'https://hpddmsercnfabjflqjnp.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_4Y2K3GCnc-vS0Y4H-OentQ_BKjlJCHO';
 
 class Component extends DCLogic {
   state = {
@@ -1382,13 +1388,41 @@ class Component extends DCLogic {
     this.setState({ viewportWidth: window.innerWidth });
     this.loadData(false);
     this._syncTimer = setInterval(() => this.loadData(false), SYNC_INTERVAL_MS);
+    this._sessionTimer = setInterval(() => this.checkSessionExpiry(), 60 * 1000);
     this.restoreSession();
+    this.startRealtime();
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._clockTimer);
+    clearInterval(this._syncTimer);
+    clearInterval(this._sessionTimer);
+    clearTimeout(this._toastTimer);
+    window.removeEventListener('resize', this._onResize);
+    if (this._sb && this._sbChannel) this._sb.removeChannel(this._sbChannel);
+  }
+
+  // Live updates: any insert/update/delete on these tables refreshes the app
+  // instantly for everyone, instead of waiting for the next poll.
+  startRealtime() {
+    if (!window.supabase || SUPABASE_ANON_KEY.indexOf('REPLACE') === 0) return;
+    this._sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    this._sbChannel = this._sb
+      .channel('erawan-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'medicines' }, () => this.loadData(false))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'receiving_logs' }, () => this.loadData(false))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'dispensing_logs' }, () => this.loadData(false))
+      .subscribe();
   }
 
   restoreSession() {
     let saved;
     try { saved = JSON.parse(localStorage.getItem('erawan_auth') || 'null'); } catch { saved = null; }
     if (!saved || !saved.username || !saved.password) return;
+    if (saved.loginAt && (Date.now() - saved.loginAt) > SESSION_MAX_AGE_MS) {
+      localStorage.removeItem('erawan_auth');
+      return;
+    }
     fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1402,11 +1436,15 @@ class Component extends DCLogic {
       .catch(() => {});
   }
 
-  componentWillUnmount() {
-    clearInterval(this._clockTimer);
-    clearInterval(this._syncTimer);
-    clearTimeout(this._toastTimer);
-    window.removeEventListener('resize', this._onResize);
+  checkSessionExpiry() {
+    let saved;
+    try { saved = JSON.parse(localStorage.getItem('erawan_auth') || 'null'); } catch { saved = null; }
+    if (!saved || !saved.loginAt) return;
+    if (this.state.loggedInUser && (Date.now() - saved.loginAt) > SESSION_MAX_AGE_MS) {
+      localStorage.removeItem('erawan_auth');
+      this.setState({ loggedInUser: null, loginUser: '', loginPass: '', page: 'dashboard', userMenuOpen: false });
+      this.showToast('เซสชันหมดอายุ (4 ชั่วโมง) กรุณาเข้าสู่ระบบใหม่');
+    }
   }
 
   // Map raw Sheet rows -> internal records, computing the derived fields render() expects.
@@ -1764,7 +1802,7 @@ class Component extends DCLogic {
           return;
         }
         this.setState({ loggedInUser: data.user, loginError: '', loginSubmitting: false, page: 'dashboard' });
-        try { localStorage.setItem('erawan_auth', JSON.stringify({ username: u, password: p })); } catch {}
+        try { localStorage.setItem('erawan_auth', JSON.stringify({ username: u, password: p, loginAt: Date.now() })); } catch {}
         this.logAudit(data.user.name + ' เข้าสู่ระบบ');
         this.loadData(false);
       })
@@ -2395,7 +2433,10 @@ class Component extends DCLogic {
                 : this.state.loggedInUser
             });
             if (wasSelf) {
-              try { localStorage.setItem('erawan_auth', JSON.stringify({ username, password: newPassword || this.state.loggedInUser.password })); } catch {}
+              try {
+                const prev = JSON.parse(localStorage.getItem('erawan_auth') || 'null') || {};
+                localStorage.setItem('erawan_auth', JSON.stringify({ username, password: newPassword || this.state.loggedInUser.password, loginAt: prev.loginAt || Date.now() }));
+              } catch {}
             }
             this.showToast('บันทึกข้อมูลผู้ใช้งาน "' + username + '" แล้ว');
             this.logAudit('แก้ไขข้อมูลบัญชีผู้ใช้งาน "' + username + '"');
