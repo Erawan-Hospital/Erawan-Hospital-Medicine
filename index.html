@@ -12,7 +12,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Noto Sans Thai', 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+    html, body { margin: 0; max-width: 100%; overflow-x: hidden; }
+    body { font-family: 'Noto Sans Thai', 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
     a { color: var(--accent); }
@@ -1703,13 +1704,23 @@ class Component extends DCLogic {
       this.setState({ loginError: 'กรุณากรอกชื่อผู้ใช้งานและรหัสผ่าน' });
       return;
     }
-    const match = this.state.users.find(x => x.username === u && x.password === p);
-    if (!match) {
-      this.setState({ loginError: 'ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง' });
-      return;
-    }
-    this.setState({ loggedInUser: match, loginError: '', page: 'dashboard' });
-    this.logAudit(match.name + ' เข้าสู่ระบบ');
+    this.setState({ loginSubmitting: true });
+    fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.ok === false) {
+          this.setState({ loginError: (data && data.error) || 'เข้าสู่ระบบไม่สำเร็จ', loginSubmitting: false });
+          return;
+        }
+        this.setState({ loggedInUser: data.user, loginError: '', loginSubmitting: false, page: 'dashboard' });
+        this.logAudit(data.user.name + ' เข้าสู่ระบบ');
+        this.loadData(false);
+      })
+      .catch(err => this.setState({ loginError: (err && err.message) || 'เข้าสู่ระบบไม่สำเร็จ', loginSubmitting: false }));
   }
 
   renderVals() {

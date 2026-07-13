@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       sb('medicines?select=id,code,name,unit,warehouse,lot,expiry,qty&order=name.asc'),
       sb('receiving_logs?select=log_date,log_time,name,unit,qty,lot,expiry,person,place&order=log_date.desc'),
       sb('dispensing_logs?select=log_date,log_time,name,unit,qty,lot,expiry,person,place&order=log_date.desc'),
-      sb('users?select=name,username,password,role&order=id.asc')
+      sb('users?select=name,username,role&order=id.asc')
     ]);
 
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
