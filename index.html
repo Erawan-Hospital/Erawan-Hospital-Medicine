@@ -21,6 +21,13 @@
     a:hover { color: var(--accent-2); }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .print-only { display: none; }
+    @media print {
+      .app-sidebar, .no-print, button { display: none !important; }
+      .print-only { display: block !important; }
+      body, [style*="var(--bg)"] { background: #fff !important; color: #111 !important; }
+      * { box-shadow: none !important; }
+    }
   </style>
 </helmet>
 
@@ -71,7 +78,7 @@
   </sc-if>
 
   <!-- Sidebar -->
-  <div style="{{ sidebarStyle }}">
+  <div class="app-sidebar" style="{{ sidebarStyle }}">
     <div style="display:flex; align-items:center; gap:12px;">
       <div style="width:64px; height:64px; border-radius:16px; background:var(--sidebar-card); border:1px solid var(--sidebar-border); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 14px rgba(0,0,0,0.18);">
         <img src="assets/hospital-logo.png" alt="Erawan Hospital logo" style="width:52px; height:52px; object-fit:contain;" />
@@ -128,16 +135,18 @@
     <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px;">
       <div style="display:flex; align-items:flex-start; gap:12px;">
         <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
-          <div onClick="{{ toggleSidebar }}" style="width:36px; height:36px; border-radius:10px; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:16px;">☰</div>
+          <div class="no-print" onClick="{{ toggleSidebar }}" style="width:36px; height:36px; border-radius:10px; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:16px;">☰</div>
         </sc-if>
         <div>
           <div style="font-size:24px; font-weight:800; display:flex; align-items:center; gap:10px;">
             <span>{{ pageIcon }}</span> {{ pageTitle }}
           </div>
           <div style="font-size:13px; color:var(--text-dim); margin-top:4px;">{{ pageSubtitle }}</div>
+          <div class="print-only" style="font-size:12px; color:#334155; margin-top:6px;">พิมพ์เมื่อ {{ printedAtLabel }}</div>
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+      <div class="no-print" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+        <button onClick="{{ printPage }}" style="display:flex; align-items:center; gap:8px; background:var(--card); color:var(--text); border:1px solid var(--border); padding:10px 14px; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap;">🖨️ PDF</button>
         <div style="position:relative;">
           <div onClick="{{ toggleNotifMenu }}" style="position:relative; width:36px; height:36px; border-radius:10px; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer;">
             <span style="font-size:16px;">🔔</span>
@@ -1790,6 +1799,10 @@ class Component extends DCLogic {
     this.forceUpdate();
   }
 
+  printPage() {
+    window.print();
+  }
+
   testSheetConnection() {
     this.setState({ sheetTesting: true });
     fetch(API_URL, { cache: 'no-store' })
@@ -2159,6 +2172,8 @@ class Component extends DCLogic {
         : isDrugDetail ? ('ประวัติการรับเข้า-จ่ายออกของยารายการนี้')
         : isSettings ? ('ปรับเกณฑ์การแจ้งเตือนและการตั้งค่าระบบ')
         : ('การเชื่อมต่อกับฐานข้อมูลภายนอก'),
+      printPage: () => this.printPage(),
+      printedAtLabel: fmtThaiDate(new Date()) + ' ' + String(this.state.tick.getHours()).padStart(2, '0') + ':' + String(this.state.tick.getMinutes()).padStart(2, '0'),
       themeToggleIcon: isDark ? '🌙' : '☀️',
       themeToggleLabel: isDark ? 'Dark' : 'Light',
       themeToggleStyle: { display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)', padding: '9px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' },
