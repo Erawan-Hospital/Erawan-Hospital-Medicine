@@ -22,11 +22,20 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes spin { to { transform: rotate(360deg); } }
     .print-only { display: none; }
+    .print-watermark { display: none; }
     @media print {
       .app-sidebar, .no-print, button { display: none !important; }
       .print-only { display: block !important; }
+      .app-root { min-height: auto !important; display: block !important; }
       body, [style*="var(--bg)"] { background: #fff !important; color: #111 !important; }
       * { box-shadow: none !important; }
+      table, tr, td, th { border: 1px solid #333 !important; }
+      td, th { padding: 6px 8px !important; }
+      .print-watermark {
+        display: flex; position: fixed; inset: 0; align-items: center; justify-content: center;
+        z-index: -1; opacity: 0.07; pointer-events: none;
+      }
+      .print-watermark img { width: 320px; height: 320px; object-fit: contain; }
     }
   </style>
 </helmet>
@@ -71,7 +80,10 @@
 </sc-if>
 
 <sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
-<div style="display:flex; min-height:100vh; background: var(--bg); color: var(--text); font-family:'Noto Sans Thai','Inter',sans-serif; transition: background .2s, color .2s;">
+<div class="app-root" style="display:flex; min-height:100vh; background: var(--bg); color: var(--text); font-family:'Noto Sans Thai','Inter',sans-serif; transition: background .2s, color .2s;">
+  <div class="print-watermark">
+    <img src="assets/hospital-logo.png" alt="" />
+  </div>
 
   <sc-if value="{{ sidebarOpen }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeSidebar }}" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:80;"></div>
@@ -337,7 +349,7 @@
     <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex; flex-direction:column; gap:16px;">
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div class="no-print" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
           <input type="text" placeholder="ค้นหาชื่อยา รหัสยา หรือ เลขล็อต..." value="{{ search }}" onChange="{{ onSearchChange }}"
             style="flex:1; min-width:220px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
 
@@ -376,11 +388,13 @@
                 <th style="padding:12px 10px; font-weight:600;">รหัสยา</th>
                 <th onClick="{{ sortByWarehouse }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">คลัง {{ sortArrows.warehouse }}</th>
                 <th onClick="{{ sortByName }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">ชื่อยา {{ sortArrows.name }}</th>
+                <th style="padding:12px 10px; font-weight:600;">บริษัทยา</th>
+                <th style="padding:12px 10px; font-weight:600;">Lot เลขที่</th>
                 <th onClick="{{ sortByExpiry }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">วันหมดอายุ {{ sortArrows.expiry }}</th>
                 <th onClick="{{ sortByQty }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">คงเหลือ {{ sortArrows.qty }}</th>
                 <th style="padding:12px 20px; font-weight:600;">สถานะ</th>
                 <sc-if value="{{ isAdminRole }}" hint-placeholder-val="{{ false }}">
-                  <th style="padding:12px 20px; font-weight:600;">จัดการ</th>
+                  <th class="no-print" style="padding:12px 20px; font-weight:600;">จัดการ</th>
                 </sc-if>
               </tr>
             </thead>
@@ -390,10 +404,9 @@
                   <td onClick="{{ row.onOpenDetail }}" style="padding:12px 20px; color:var(--text-dim); cursor:pointer;">{{ row.idx }}</td>
                   <td onClick="{{ row.onOpenDetail }}" style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim); cursor:pointer;">{{ row.code }}</td>
                   <td onClick="{{ row.onOpenDetail }}" style="padding:12px 10px; cursor:pointer;"><span style="background:var(--card-2); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:600;">{{ row.warehouse }}</span></td>
-                  <td onClick="{{ row.onOpenDetail }}" style="padding:12px 10px; cursor:pointer;">
-                    <div style="font-weight:600;">{{ row.name }}</div>
-                    <div style="font-size:11.5px; color:var(--text-dim);">{{ row.lot }}</div>
-                  </td>
+                  <td onClick="{{ row.onOpenDetail }}" style="padding:12px 10px; cursor:pointer; font-weight:600;">{{ row.name }}</td>
+                  <td onClick="{{ row.onOpenDetail }}" style="padding:12px 10px; cursor:pointer; color:var(--text-dim);">{{ row.company }}</td>
+                  <td onClick="{{ row.onOpenDetail }}" style="padding:12px 10px; cursor:pointer; color:var(--text-dim); font-variant-numeric:tabular-nums;">{{ row.lot }}</td>
                   <td onClick="{{ row.onOpenDetail }}" style="padding:12px 10px; cursor:pointer;">
                     <div>{{ row.expiryLabel }}</div>
                     <div style="font-size:11.5px; color:{{ row.status.solid }}; font-weight:700;">{{ row.daysLabel }}</div>
@@ -403,7 +416,7 @@
                     <span style="background:{{ row.status.bg }}; color:{{ row.status.solid }}; border:1px solid {{ row.status.solid }}; padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:700;">{{ row.status.label }}</span>
                   </td>
                   <sc-if value="{{ isAdminRole }}" hint-placeholder-val="{{ false }}">
-                    <td style="padding:12px 20px; display:flex; gap:12px;">
+                    <td class="no-print" style="padding:12px 20px; display:flex; gap:12px;">
                       <span onClick="{{ row.onEdit }}" style="color:var(--accent); font-weight:600; cursor:pointer; font-size:12.5px;">แก้ไข</span>
                       <span onClick="{{ row.onDelete }}" style="color:#ef4444; font-weight:600; cursor:pointer; font-size:12.5px;">ลบ</span>
                     </td>
@@ -411,12 +424,12 @@
                 </tr>
               </sc-for>
               <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
-                <tr><td colspan="8" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
+                <tr><td colspan="10" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
               </sc-if>
             </tbody>
           </table>
           </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
+          <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
             <div style="color:var(--text-dim);">หน้า {{ currentPage }} จาก {{ totalPages }}</div>
             <div style="display:flex; gap:8px;">
               <button onClick="{{ prevPage }}" style="{{ pagerBtnStyle }}">← ก่อนหน้า</button>
@@ -430,7 +443,7 @@
     <!-- ===================== RECEIVING HISTORY PAGE ===================== -->
     <sc-if value="{{ isReceiving }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex; flex-direction:column; gap:16px;">
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div class="no-print" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
           <input type="text" placeholder="ค้นหาชื่อยา ผู้รับเข้า Lot หรือ แหล่งที่มา..." value="{{ recSearch }}" onChange="{{ onRecSearchChange }}"
             style="flex:1; min-width:220px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
           <div style="font-size:12.5px; color:var(--text-dim); white-space:nowrap; padding-left:4px;">พบ {{ recFilteredCount }} รายการ</div>
@@ -479,7 +492,7 @@
             </tbody>
           </table>
           </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
+          <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
             <div style="color:var(--text-dim);">หน้า {{ recCurrentPage }} จาก {{ recTotalPages }}</div>
             <div style="display:flex; gap:8px;">
               <button onClick="{{ recPrevPage }}" style="{{ pagerBtnStyle }}">← ก่อนหน้า</button>
@@ -493,7 +506,7 @@
     <!-- ===================== DISPENSING HISTORY PAGE ===================== -->
     <sc-if value="{{ isDispensing }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex; flex-direction:column; gap:16px;">
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div class="no-print" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
           <input type="text" placeholder="ค้นหาชื่อยา ผู้จ่ายออก Lot หรือ ปลายทาง..." value="{{ dispSearch }}" onChange="{{ onDispSearchChange }}"
             style="flex:1; min-width:220px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
           <div style="font-size:12.5px; color:var(--text-dim); white-space:nowrap; padding-left:4px;">พบ {{ dispFilteredCount }} รายการ</div>
@@ -542,7 +555,7 @@
             </tbody>
           </table>
           </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
+          <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
             <div style="color:var(--text-dim);">หน้า {{ dispCurrentPage }} จาก {{ dispTotalPages }}</div>
             <div style="display:flex; gap:8px;">
               <button onClick="{{ dispPrevPage }}" style="{{ pagerBtnStyle }}">← ก่อนหน้า</button>
@@ -558,7 +571,7 @@
       <div style="display:flex; flex-direction:column; gap:16px;">
         <div onClick="{{ goDashboard }}" style="font-size:13px; color:var(--accent); font-weight:700; cursor:pointer; width:fit-content;">← กลับ Dashboard</div>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div class="no-print" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
           <input type="text" placeholder="ค้นหาชื่อยา..." value="{{ stockSearch }}" onChange="{{ onStockSearchChange }}"
             style="flex:1; min-width:220px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
 
@@ -606,7 +619,7 @@
             </tbody>
           </table>
           </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
+          <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid var(--border); font-size:13px;">
             <div style="color:var(--text-dim);">หน้า {{ stockCurrentPage }} จาก {{ stockTotalPages }}</div>
             <div style="display:flex; gap:8px;">
               <button onClick="{{ stockPrevPage }}" style="{{ pagerBtnStyle }}">← ก่อนหน้า</button>
@@ -659,7 +672,7 @@
                 <th style="padding:12px 10px; font-weight:600;">ชื่อ-นามสกุล</th>
                 <th style="padding:12px 10px; font-weight:600;">ชื่อผู้ใช้งาน</th>
                 <th style="padding:12px 10px; font-weight:600;">สิทธิ์</th>
-                <th style="padding:12px 20px; font-weight:600;">จัดการ</th>
+                <th class="no-print" style="padding:12px 20px; font-weight:600;">จัดการ</th>
               </tr>
             </thead>
             <tbody>
@@ -669,7 +682,7 @@
                   <td style="padding:12px 10px; font-weight:600;">{{ u.name }}</td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ u.username }}</td>
                   <td style="padding:12px 10px;"><span style="{{ u.roleBadgeStyle }}">{{ u.roleLabel }}</span></td>
-                  <td style="padding:12px 20px; display:flex; gap:12px;">
+                  <td class="no-print" style="padding:12px 20px; display:flex; gap:12px;">
                     <span onClick="{{ u.onEdit }}" style="color:var(--accent); font-weight:600; cursor:pointer; font-size:12.5px;">แก้ไข</span>
                     <span onClick="{{ u.onDelete }}" style="color:#ef4444; font-weight:600; cursor:pointer; font-size:12.5px;">ลบ</span>
                   </td>
@@ -984,10 +997,23 @@
             <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">ชื่อยา</div>
             <input type="text" value="{{ medFormName }}" onChange="{{ onMedFormNameChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
           </div>
+          <div>
+            <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">บริษัทยา</div>
+            <input type="text" list="medFormCompanyOptions" value="{{ medFormCompany }}" onChange="{{ onMedFormCompanyChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+            <datalist id="medFormCompanyOptions">
+              <sc-for list="{{ companyOptions }}" as="opt" hint-placeholder-count="5">
+                <option value="{{ opt }}"></option>
+              </sc-for>
+            </datalist>
+          </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">คลัง</div>
-              <input type="text" value="{{ medFormWarehouse }}" onChange="{{ onMedFormWarehouseChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <select value="{{ medFormWarehouse }}" onChange="{{ onMedFormWarehouseChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit; cursor:pointer;">
+                <sc-for list="{{ warehouseSelectOptions }}" as="wh" hint-placeholder-count="3">
+                  <option value="{{ wh }}">{{ wh }}</option>
+                </sc-for>
+              </select>
             </div>
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">เลขล็อต</div>
@@ -1208,6 +1234,12 @@ const DRUG_POOL = [
 
 const WAREHOUSES = ['คลังใหญ่', 'คลังย่อย', 'คลังฉุกเฉิน'];
 
+const COMPANIES = [
+  'องค์การเภสัชกรรม (GPO)', 'บริษัท เบอร์ลินฟาร์มาซูติคอลอินดัสตรี้ จำกัด', 'บริษัท ยูนิซัน จำกัด',
+  'บริษัท ดีเคเอสเอช (ประเทศไทย) จำกัด', 'บริษัท เมดโลน่ จำกัด', 'บริษัท โอสถสภา จำกัด (มหาชน)',
+  'บริษัท สยามฟาร์มาซูติคอล จำกัด', 'บริษัท ไทยนครพัฒนา จำกัด', 'บริษัท เกร๊กเตอร์ฟาร์มา จำกัด', 'บริษัท พรอส ฟาร์มา จำกัด'
+];
+
 const STAFF_NAMES = [
   'ภญ.สมศรี ใจดี', 'ภก.ประเสริฐ วงศ์สุวรรณ', 'นางสาวอรทัย พรมมา', 'นายสมชาย รักเรียน',
   'ภญ.นิภาพร สุขเจริญ', 'นายวีระชัย บุญมี', 'นางสาวกัลยา แสงทอง', 'ภก.ธนกร ศรีสุข',
@@ -1300,13 +1332,14 @@ class Component extends DCLogic {
 
     editUserOpen: false, editTargetUsername: '', editName: '', editUsername: '', editPassword: '', editRole: 'staff', editUserError: '',
 
-    medFormOpen: false, medFormId: null, medFormCode: '', medFormName: '', medFormUnit: '', medFormWarehouse: '',
+    medFormOpen: false, medFormId: null, medFormCode: '', medFormName: '', medFormUnit: '', medFormWarehouse: '', medFormCompany: '',
     medFormLot: '', medFormExpiry: '', medFormQty: '', medFormError: '', medFormSaving: false,
 
     recvFormOpen: false, recvName: '', recvUnit: '', recvWarehouse: '', recvLot: '', recvExpiry: '', recvQty: '', recvPerson: '', recvPlace: '', recvError: '', recvSaving: false,
     dispFormOpen: false, dispName: '', dispUnit: '', dispLot: '', dispPerson: '', dispPlace: '', dispQty: '', dispError: '', dispSaving: false,
 
     highlightReceivingIds: [], highlightDispensingIds: [],
+    printMode: false,
 
     notifMenuOpen: false,
     notifSeenTotal: 0,
@@ -1341,6 +1374,7 @@ class Component extends DCLogic {
         name: pool.name,
         unit: pool.unit,
         warehouse: WAREHOUSES[i % WAREHOUSES.length],
+        company: COMPANIES[i % COMPANIES.length],
         lot: 'LOT-' + (2200 + i * 7),
         expiry,
         daysLeft,
@@ -1403,9 +1437,15 @@ class Component extends DCLogic {
     this._sessionTimer = setInterval(() => this.checkSessionExpiry(), 60 * 1000);
     this.restoreSession();
     this.startRealtime();
+    this._onBeforePrint = () => this.setState({ printMode: true });
+    this._onAfterPrint = () => this.setState({ printMode: false });
+    window.addEventListener('beforeprint', this._onBeforePrint);
+    window.addEventListener('afterprint', this._onAfterPrint);
   }
 
   componentWillUnmount() {
+    window.removeEventListener('beforeprint', this._onBeforePrint);
+    window.removeEventListener('afterprint', this._onAfterPrint);
     clearInterval(this._clockTimer);
     clearInterval(this._syncTimer);
     clearInterval(this._sessionTimer);
@@ -1494,6 +1534,7 @@ class Component extends DCLogic {
         name: r.name || '-',
         unit: r.unit || '',
         warehouse: r.warehouse || '-',
+        company: r.company || '-',
         lot: r.lot || '-',
         expiry, daysLeft,
         expiryLabel: fmtThaiDate(expiry),
@@ -1608,14 +1649,14 @@ class Component extends DCLogic {
   openAddMedicine() {
     this.setState({
       medFormOpen: true, medFormId: null, medFormCode: '', medFormName: '', medFormUnit: '',
-      medFormWarehouse: '', medFormLot: '', medFormExpiry: '', medFormQty: '', medFormError: '', medFormSaving: false
+      medFormWarehouse: WAREHOUSES[0], medFormCompany: '', medFormLot: '', medFormExpiry: '', medFormQty: '', medFormError: '', medFormSaving: false
     });
   }
 
   openEditMedicine(row) {
     this.setState({
       medFormOpen: true, medFormId: row.id, medFormCode: row.code, medFormName: row.name, medFormUnit: row.unit,
-      medFormWarehouse: row.warehouse, medFormLot: row.lot,
+      medFormWarehouse: row.warehouse, medFormCompany: row.company === '-' ? '' : row.company, medFormLot: row.lot,
       medFormExpiry: row.expiry ? row.expiry.toISOString().slice(0, 10) : '',
       medFormQty: String(row.qty), medFormError: '', medFormSaving: false
     });
@@ -1639,7 +1680,7 @@ class Component extends DCLogic {
     if (!name || !lot) { this.setState({ medFormError: 'กรุณากรอกชื่อยาและเลขล็อต' }); return; }
     const body = {
       code: s.medFormCode.trim(), name, unit: s.medFormUnit.trim(), warehouse: s.medFormWarehouse.trim(),
-      lot, expiry: s.medFormExpiry || null, qty: Number(s.medFormQty) || 0
+      company: s.medFormCompany.trim(), lot, expiry: s.medFormExpiry || null, qty: Number(s.medFormQty) || 0
     };
     this.setState({ medFormSaving: true, medFormError: '' });
     const isEdit = s.medFormId !== null;
@@ -1979,7 +2020,9 @@ class Component extends DCLogic {
     const pageSize = 10;
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
     const currentPage = Math.min(this.state.currentPage, totalPages);
-    const pagedRows = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize).map(r => ({
+    const printMode = this.state.printMode;
+    const sliceForPage = (arr, page) => printMode ? arr : arr.slice((page - 1) * pageSize, page * pageSize);
+    const pagedRows = sliceForPage(filtered, currentPage).map(r => ({
       ...r,
       onOpenDetail: () => this.openDrugDetail(r.name),
       onEdit: () => this.openEditMedicine(r),
@@ -2067,7 +2110,7 @@ class Component extends DCLogic {
     stockRows = stockRows.map((r, i) => ({ ...r, idx: i + 1, barPct: Math.round((r.qty / maxQty) * 100), onOpenDetail: () => this.openDrugDetail(r.name) }));
     const stockTotalPages = Math.max(1, Math.ceil(stockRows.length / pageSize));
     const stockCurrentPage = Math.min(this.state.stockPage, stockTotalPages);
-    const stockPagedRows = stockRows.slice((stockCurrentPage - 1) * pageSize, stockCurrentPage * pageSize);
+    const stockPagedRows = sliceForPage(stockRows, stockCurrentPage);
     const stockArrow = (key) => this.state.stockSortKey === key ? (this.state.stockSortDir === 'asc' ? '▲' : '▼') : '';
     const stockSortArrows = { name: stockArrow('name'), qty: stockArrow('qty') };
 
@@ -2118,7 +2161,7 @@ class Component extends DCLogic {
     const recFiltered = this.getFilteredLog(this.receivingLogs, this.state.recSearch, this.state.recSortKey, this.state.recSortDir);
     const recTotalPages = Math.max(1, Math.ceil(recFiltered.length / pageSize));
     const recCurrentPage = Math.min(this.state.recPage, recTotalPages);
-    const recPagedRows = recFiltered.slice((recCurrentPage - 1) * pageSize, recCurrentPage * pageSize).map(r => ({
+    const recPagedRows = sliceForPage(recFiltered, recCurrentPage).map(r => ({
       ...this.withExpColor(r),
       rowStyle: this.state.highlightReceivingIds.includes(r.id)
         ? { borderTop: '1px solid var(--border)', background: 'rgba(34,197,94,0.16)', transition: 'background 1.5s ease' }
@@ -2128,7 +2171,7 @@ class Component extends DCLogic {
     const dispFiltered = this.getFilteredLog(this.dispensingLogs, this.state.dispSearch, this.state.dispSortKey, this.state.dispSortDir);
     const dispTotalPages = Math.max(1, Math.ceil(dispFiltered.length / pageSize));
     const dispCurrentPage = Math.min(this.state.dispPage, dispTotalPages);
-    const dispPagedRows = dispFiltered.slice((dispCurrentPage - 1) * pageSize, dispCurrentPage * pageSize).map(r => ({
+    const dispPagedRows = sliceForPage(dispFiltered, dispCurrentPage).map(r => ({
       ...this.withExpColor(r),
       rowStyle: this.state.highlightDispensingIds.includes(r.id)
         ? { borderTop: '1px solid var(--border)', background: 'rgba(239,68,68,0.14)', transition: 'background 1.5s ease' }
@@ -2350,6 +2393,9 @@ class Component extends DCLogic {
       medFormUnit: this.state.medFormUnit,
       onMedFormUnitChange: (e) => this.setState({ medFormUnit: e.target.value, medFormError: '' }),
       medFormWarehouse: this.state.medFormWarehouse,
+      medFormCompany: this.state.medFormCompany,
+      onMedFormCompanyChange: (e) => this.setState({ medFormCompany: e.target.value, medFormError: '' }),
+      companyOptions: Array.from(new Set([...COMPANIES, ...this.allDrugs.map(d => d.company)])).filter(c => c && c !== '-'),
       onMedFormWarehouseChange: (e) => this.setState({ medFormWarehouse: e.target.value, medFormError: '' }),
       medFormLot: this.state.medFormLot,
       onMedFormLotChange: (e) => this.setState({ medFormLot: e.target.value, medFormError: '' }),

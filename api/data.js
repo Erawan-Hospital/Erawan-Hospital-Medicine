@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
   try {
     const [medicines, receiving, dispensing, users] = await Promise.all([
-      sb('medicines?select=id,code,name,unit,warehouse,lot,expiry,qty&order=name.asc'),
+      sb('medicines?select=id,code,name,unit,warehouse,lot,expiry,qty,company&order=name.asc'),
       sb('receiving_logs?select=id,log_date,log_time,name,unit,qty,lot,expiry,person,place&order=log_date.desc,id.desc'),
       sb('dispensing_logs?select=id,log_date,log_time,name,unit,qty,lot,expiry,person,place&order=log_date.desc,id.desc'),
       sb('users?select=name,username,role&order=id.asc')

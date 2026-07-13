@@ -6,6 +6,7 @@ create table if not exists medicines (
   name text not null,
   unit text,
   warehouse text,
+  company text,
   lot text,
   expiry date,
   qty numeric not null default 0,
