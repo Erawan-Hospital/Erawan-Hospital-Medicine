@@ -86,8 +86,11 @@
         </div>
         <div style="width:100%;">
           <div style="font-size:12.5px; font-weight:600; margin-bottom:6px; color:var(--text-dim);">รหัสผ่าน</div>
-          <input type="password" placeholder="รหัสผ่าน" value="{{ loginPass }}" onChange="{{ onLoginPassChange }}" onKeyDown="{{ onLoginKeyDown }}"
-            style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
+          <div style="position:relative;">
+            <input type="{{ loginPassInputType }}" placeholder="รหัสผ่าน" value="{{ loginPass }}" onChange="{{ onLoginPassChange }}" onKeyDown="{{ onLoginKeyDown }}"
+              style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:11px 40px 11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
+            <span onClick="{{ toggleLoginPassVisible }}" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:15px; color:var(--text-dim); user-select:none;">{{ loginPassToggleIcon }}</span>
+          </div>
         </div>
 
         <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
@@ -334,6 +337,7 @@
             <thead>
               <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
                 <th style="padding:10px 20px; font-weight:600;">#</th>
+                <th style="padding:10px; font-weight:600;">รหัสยา</th>
                 <th style="padding:10px; font-weight:600;">คลัง</th>
                 <th style="padding:10px; font-weight:600;">ชื่อยา</th>
                 <th style="padding:10px; font-weight:600;">วันหมดอายุ</th>
@@ -345,6 +349,7 @@
               <sc-for list="{{ criticalTop10 }}" as="row" hint-placeholder-count="6">
                 <tr onClick="{{ row.onOpenDetail }}" style="border-top:1px solid var(--border); cursor:pointer;">
                   <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.code }}</td>
                   <td style="padding:12px 10px;"><span style="background:var(--card-2); border:1px solid var(--border); padding:3px 9px; border-radius:6px; font-size:11.5px; font-weight:600;">{{ row.warehouse }}</span></td>
                   <td style="padding:12px 10px;">
                     <div style="font-weight:600;">{{ row.name }}</div>
@@ -484,9 +489,7 @@
             style="flex:1; min-width:220px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
           <div style="font-size:12.5px; color:var(--text-dim); white-space:nowrap; padding-left:4px;">พบ {{ recFilteredCount }} รายการ</div>
 
-          <sc-if value="{{ isAdminRole }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ openRecvForm }}" style="background:var(--accent); color:white; border:none; padding:11px 16px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap;">📥 บันทึกรับเข้า</button>
-          </sc-if>
+          <button class="no-print" onClick="{{ openRecvForm }}" style="background:var(--accent); color:white; border:none; padding:11px 16px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap;">📥 บันทึกรับเข้า</button>
         </div>
 
         <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
@@ -494,7 +497,7 @@
           <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
             <thead>
               <tr class="print-only print-rephead">
-                <td colspan="9">
+                <td colspan="10">
                   <div class="print-rephead-inner">
                     <div>
                       <div class="print-rephead-t1">{{ hospitalName }}</div>
@@ -511,6 +514,7 @@
                 <th style="padding:12px 20px; font-weight:600;">#</th>
                 <th onClick="{{ recSortByDate }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">วันที่รับเข้า {{ recSortArrows.date }}</th>
                 <th style="padding:12px 10px; font-weight:600;">เวลา</th>
+                <th style="padding:12px 10px; font-weight:600;">รหัสยา</th>
                 <th onClick="{{ recSortByName }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">ชื่อยา {{ recSortArrows.name }}</th>
                 <th style="padding:12px 10px; font-weight:600;">Lot เลขที่</th>
                 <th style="padding:12px 10px; font-weight:600;">วันหมดอายุ</th>
@@ -525,6 +529,7 @@
                   <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ row.dateLabel }}</td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.time }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.code }}</td>
                   <td style="padding:12px 10px; font-weight:600;">{{ row.name }}</td>
                   <td style="padding:12px 10px; color:var(--text-dim); font-variant-numeric:tabular-nums;">{{ row.lot }}</td>
                   <td style="padding:12px 10px;">
@@ -537,7 +542,7 @@
                 </tr>
               </sc-for>
               <sc-if value="{{ recNoResults }}" hint-placeholder-val="{{ false }}">
-                <tr><td colspan="9" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
+                <tr><td colspan="10" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
               </sc-if>
             </tbody>
           </table>
@@ -561,9 +566,7 @@
             style="flex:1; min-width:220px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 14px; border-radius:10px; font-size:13.5px; font-family:inherit;" />
           <div style="font-size:12.5px; color:var(--text-dim); white-space:nowrap; padding-left:4px;">พบ {{ dispFilteredCount }} รายการ</div>
 
-          <sc-if value="{{ isAdminRole }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ openDispForm }}" style="background:var(--accent); color:white; border:none; padding:11px 16px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap;">📤 บันทึกจ่ายออก</button>
-          </sc-if>
+          <button class="no-print" onClick="{{ openDispForm }}" style="background:var(--accent); color:white; border:none; padding:11px 16px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap;">📤 บันทึกจ่ายออก</button>
         </div>
 
         <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
@@ -571,7 +574,7 @@
           <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
             <thead>
               <tr class="print-only print-rephead">
-                <td colspan="9">
+                <td colspan="10">
                   <div class="print-rephead-inner">
                     <div>
                       <div class="print-rephead-t1">{{ hospitalName }}</div>
@@ -588,6 +591,7 @@
                 <th style="padding:12px 20px; font-weight:600;">#</th>
                 <th onClick="{{ dispSortByDate }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">วันที่จ่ายออก {{ dispSortArrows.date }}</th>
                 <th style="padding:12px 10px; font-weight:600;">เวลา</th>
+                <th style="padding:12px 10px; font-weight:600;">รหัสยา</th>
                 <th onClick="{{ dispSortByName }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">ชื่อยา {{ dispSortArrows.name }}</th>
                 <th style="padding:12px 10px; font-weight:600;">Lot เลขที่</th>
                 <th style="padding:12px 10px; font-weight:600;">วันหมดอายุ</th>
@@ -602,6 +606,7 @@
                   <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ row.dateLabel }}</td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.time }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.code }}</td>
                   <td style="padding:12px 10px; font-weight:600;">{{ row.name }}</td>
                   <td style="padding:12px 10px; color:var(--text-dim); font-variant-numeric:tabular-nums;">{{ row.lot }}</td>
                   <td style="padding:12px 10px;">
@@ -614,7 +619,7 @@
                 </tr>
               </sc-for>
               <sc-if value="{{ dispNoResults }}" hint-placeholder-val="{{ false }}">
-                <tr><td colspan="9" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
+                <tr><td colspan="10" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
               </sc-if>
             </tbody>
           </table>
@@ -653,7 +658,7 @@
           <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
             <thead>
               <tr class="print-only print-rephead">
-                <td colspan="5">
+                <td colspan="6">
                   <div class="print-rephead-inner">
                     <div>
                       <div class="print-rephead-t1">{{ hospitalName }}</div>
@@ -668,6 +673,7 @@
               </tr>
               <tr style="text-align:left; color:var(--text-dim); font-size:12px;">
                 <th style="padding:12px 20px; font-weight:600;">#</th>
+                <th style="padding:12px 10px; font-weight:600;">รหัสยา</th>
                 <th onClick="{{ stockSortByName }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">ชื่อยา {{ stockSortArrows.name }}</th>
                 <th onClick="{{ stockSortByQty }}" style="padding:12px 10px; font-weight:600; cursor:pointer; user-select:none;">คงเหลือรวม {{ stockSortArrows.qty }}</th>
                 <th style="padding:12px 10px; font-weight:600;">สัดส่วน</th>
@@ -678,6 +684,7 @@
               <sc-for list="{{ stockPagedRows }}" as="row" hint-placeholder-count="10">
                 <tr onClick="{{ row.onOpenDetail }}" style="border-top:1px solid var(--border); cursor:pointer;">
                   <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
+                  <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.codesLabel }}</td>
                   <td style="padding:12px 10px; font-weight:600;">{{ row.name }}</td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ row.qty }} {{ row.unit }}</td>
                   <td style="padding:12px 10px;">
@@ -692,7 +699,7 @@
                 </tr>
               </sc-for>
               <sc-if value="{{ stockNoResults }}" hint-placeholder-val="{{ false }}">
-                <tr><td colspan="5" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
+                <tr><td colspan="6" style="padding:40px; text-align:center; color:var(--text-dim);">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>
               </sc-if>
             </tbody>
           </table>
@@ -807,7 +814,7 @@
 
         <div style="background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
           <div>
-            <div style="font-size:19px; font-weight:800;">{{ detailDrug.name }}</div>
+            <div style="font-size:19px; font-weight:800;">{{ detailDrug.name }} <span style="font-size:13px; font-weight:600; color:var(--text-dim);">({{ detailDrug.code }})</span></div>
             <div style="font-size:12.5px; color:var(--text-dim); margin-top:4px;">คงเหลือรวมทุกคลัง: {{ detailDrug.qty }} {{ detailDrug.unit }} · {{ detailDrug.warehousesLabel }}</div>
           </div>
           <div style="display:flex; gap:10px;">
@@ -1405,7 +1412,7 @@ class Component extends DCLogic {
     autoSendEnabled: true,
     loggedInUser: null,
     userMenuOpen: false,
-    loginUser: '', loginPass: '', loginError: '',
+    loginUser: '', loginPass: '', loginError: '', loginPassVisible: false,
     newUserName: '', newUserUsername: '', newUserPassword: '', newUserRole: 'staff', newUserError: '',
 
     editUserOpen: false, editTargetUsername: '', editName: '', editUsername: '', editPassword: '', editRole: 'staff', editUserError: '',
@@ -1792,9 +1799,12 @@ class Component extends DCLogic {
     const qty = Number(s.recvQty);
     if (!name || lot === 'LOT-' || !lot || !qty) { this.setState({ recvError: 'กรุณากรอกชื่อยา เลขล็อต และจำนวนให้ครบ' }); return; }
     this.setState({ recvSaving: true, recvError: '' });
+    const now = new Date();
     this.adminApi('/api/receiving', 'POST', {
       name, unit: s.recvUnit.trim(), warehouse: s.recvWarehouse.trim(), lot,
-      expiry: s.recvExpiry || null, qty, person: this.state.loggedInUser.name, place: s.recvPlace.trim()
+      expiry: s.recvExpiry || null, qty, person: this.state.loggedInUser.name, place: s.recvPlace.trim(),
+      log_date: now.toISOString().slice(0, 10),
+      log_time: String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
     })
       .then(() => {
         this.setState({ recvFormOpen: false, recvSaving: false });
@@ -1820,8 +1830,11 @@ class Component extends DCLogic {
     const qty = Number(s.dispQty);
     if (!name || lot === 'LOT-' || !lot || !qty) { this.setState({ dispError: 'กรุณากรอกชื่อยา เลขล็อต และจำนวนให้ครบ' }); return; }
     this.setState({ dispSaving: true, dispError: '' });
+    const now = new Date();
     this.adminApi('/api/dispensing', 'POST', {
-      name, unit: s.dispUnit.trim(), lot, qty, person: this.state.loggedInUser.name, place: s.dispPlace.trim()
+      name, unit: s.dispUnit.trim(), lot, qty, person: this.state.loggedInUser.name, place: s.dispPlace.trim(),
+      log_date: now.toISOString().slice(0, 10),
+      log_time: String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
     })
       .then(() => {
         this.setState({ dispFormOpen: false, dispSaving: false });
@@ -2160,15 +2173,17 @@ class Component extends DCLogic {
     // Full stock breakdown per drug name (for the "stock" page)
     const stockAggAll = {};
     this.allDrugs.forEach(r => {
-      if (!stockAggAll[r.name]) stockAggAll[r.name] = { name: r.name, unit: r.unit, qty: 0, warehouses: new Set() };
+      if (!stockAggAll[r.name]) stockAggAll[r.name] = { name: r.name, unit: r.unit, qty: 0, warehouses: new Set(), codes: new Set() };
       stockAggAll[r.name].qty += r.qty;
       stockAggAll[r.name].warehouses.add(r.warehouse);
+      stockAggAll[r.name].codes.add(r.code);
     });
     const grandTotalQty = Object.values(stockAggAll).reduce((a, r) => a + r.qty, 0) || 1;
     let stockRows = Object.values(stockAggAll).map(r => ({
       name: r.name,
       unit: r.unit,
       qty: r.qty,
+      codesLabel: [...r.codes].join(', '),
       pct: Math.round((r.qty / grandTotalQty) * 1000) / 10,
       warehousesLabel: [...r.warehouses].join(', '),
       warehouseSet: r.warehouses
@@ -2205,6 +2220,7 @@ class Component extends DCLogic {
       detailDispensing = this.dispensingLogs.filter(r => r.name === selName).sort((a, b) => b.date - a.date).map(r => this.withExpColor(r));
       detailDrug = {
         name: selName,
+        code: matches[0] ? matches[0].code : '-',
         qty: qtySum,
         unit: matches[0] ? matches[0].unit : '',
         warehousesLabel: 'พบใน ' + whSet.size + ' คลัง (' + [...whSet].join(', ') + ')',
@@ -2236,11 +2252,15 @@ class Component extends DCLogic {
     // Audit log rows
     const auditRows = this.state.auditLog;
 
+    const codeByName = {};
+    this.allDrugs.forEach(d => { if (!codeByName[d.name]) codeByName[d.name] = d.code; });
+
     const recFiltered = this.getFilteredLog(this.receivingLogs, this.state.recSearch, this.state.recSortKey, this.state.recSortDir);
     const recTotalPages = Math.max(1, Math.ceil(recFiltered.length / pageSize));
     const recCurrentPage = Math.min(this.state.recPage, recTotalPages);
     const recPagedRows = sliceForPage(recFiltered, recCurrentPage).map(r => ({
       ...this.withExpColor(r),
+      code: codeByName[r.name] || '-',
       rowStyle: this.state.highlightReceivingIds.includes(r.id)
         ? { borderTop: '1px solid var(--border)', background: 'rgba(34,197,94,0.16)', transition: 'background 1.5s ease' }
         : { borderTop: '1px solid var(--border)' }
@@ -2251,6 +2271,7 @@ class Component extends DCLogic {
     const dispCurrentPage = Math.min(this.state.dispPage, dispTotalPages);
     const dispPagedRows = sliceForPage(dispFiltered, dispCurrentPage).map(r => ({
       ...this.withExpColor(r),
+      code: codeByName[r.name] || '-',
       rowStyle: this.state.highlightDispensingIds.includes(r.id)
         ? { borderTop: '1px solid var(--border)', background: 'rgba(239,68,68,0.14)', transition: 'background 1.5s ease' }
         : { borderTop: '1px solid var(--border)' }
@@ -2267,6 +2288,9 @@ class Component extends DCLogic {
       loginUser: this.state.loginUser,
       loginPass: this.state.loginPass,
       loginError: this.state.loginError,
+      loginPassInputType: this.state.loginPassVisible ? 'text' : 'password',
+      loginPassToggleIcon: this.state.loginPassVisible ? '🙈' : '👁️',
+      toggleLoginPassVisible: () => this.setState(s => ({ loginPassVisible: !s.loginPassVisible })),
       onLoginUserChange: (e) => this.setState({ loginUser: e.target.value, loginError: '' }),
       onLoginPassChange: (e) => this.setState({ loginPass: e.target.value, loginError: '' }),
       doLogin: () => this.handleLogin(),

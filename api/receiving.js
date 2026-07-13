@@ -4,7 +4,7 @@
 //         { adminUsername, adminPassword, name, unit, warehouse, qty, lot, expiry, person, place, code }
 
 import { sb, supabaseConfigured } from './_supabase.js';
-import { requireAdmin } from './_auth.js';
+import { requireStaffOrAdmin } from './_auth.js';
 import { adjustQty } from './_stock.js';
 
 export default async function handler(req, res) {
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      if (!(await requireAdmin(req, res))) return;
+      if (!(await requireStaffOrAdmin(req, res))) return;
       const { name, unit, warehouse, qty, lot, expiry, person, place, code, log_date, log_time } = req.body || {};
       const qtyNum = Number(qty);
       if (!name || !lot || !qtyNum) {
