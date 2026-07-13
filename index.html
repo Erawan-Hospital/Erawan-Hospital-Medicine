@@ -449,7 +449,7 @@
             </thead>
             <tbody>
               <sc-for list="{{ recPagedRows }}" as="row" hint-placeholder-count="10">
-                <tr style="border-top:1px solid var(--border);">
+                <tr style="{{ row.rowStyle }}">
                   <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ row.dateLabel }}</td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.time }}</td>
@@ -512,7 +512,7 @@
             </thead>
             <tbody>
               <sc-for list="{{ dispPagedRows }}" as="row" hint-placeholder-count="10">
-                <tr style="border-top:1px solid var(--border);">
+                <tr style="{{ row.rowStyle }}">
                   <td style="padding:12px 20px; color:var(--text-dim);">{{ row.idx }}</td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums;">{{ row.dateLabel }}</td>
                   <td style="padding:12px 10px; font-variant-numeric:tabular-nums; color:var(--text-dim);">{{ row.time }}</td>
@@ -1297,6 +1297,8 @@ class Component extends DCLogic {
     recvFormOpen: false, recvName: '', recvUnit: '', recvWarehouse: '', recvLot: '', recvExpiry: '', recvQty: '', recvPerson: '', recvPlace: '', recvError: '', recvSaving: false,
     dispFormOpen: false, dispName: '', dispUnit: '', dispLot: '', dispPerson: '', dispPlace: '', dispQty: '', dispError: '', dispSaving: false,
 
+    highlightReceivingIds: [], highlightDispensingIds: [],
+
     notifMenuOpen: false,
     notifSeenTotal: 0,
     viewportWidth: 1400,
@@ -1339,6 +1341,7 @@ class Component extends DCLogic {
       };
     });
     this._toastTimer = null;
+    this._firstLoad = true;
 
     this.receivingLogs = Array.from({ length: 42 }).map((_, i) => {
       const pool = DRUG_POOL[(i * 3 + 2) % DRUG_POOL.length];
@@ -1491,7 +1494,7 @@ class Component extends DCLogic {
         daysLabel = daysLeft < 0 ? ('หมดอายุแล้ว ' + Math.abs(daysLeft) + ' วัน') : ('เหลือ ' + daysLeft + ' วัน');
       }
       return {
-        idx: i + 1, date, dateLabel: fmtThaiDate(date), time,
+        idx: i + 1, id: r.id != null ? r.id : null, date, dateLabel: fmtThaiDate(date), time,
         name: r.name || '-', unit: r.unit || '',
         qty: num(r.qty), lot: r.lot || '-',
         expiry, daysLeft, expiryLabel, daysLabel,
@@ -1506,6 +1509,8 @@ class Component extends DCLogic {
 
   loadData(manual) {
     if (manual) this.setState({ refreshing: true });
+    const prevRecvIds = new Set(this.receivingLogs.map(r => r.id).filter(id => id != null));
+    const prevDispIds = new Set(this.dispensingLogs.map(r => r.id).filter(id => id != null));
     fetch(API_URL, { cache: 'no-store' })
       .then(r => r.json())
       .then(payload => {
@@ -1513,11 +1518,27 @@ class Component extends DCLogic {
         const users = this.ingest(payload);
         const now = new Date();
         const syncLabel = fmtThaiDate(now) + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+        const newRecvIds = this.receivingLogs.map(r => r.id).filter(id => id != null && !prevRecvIds.has(id));
+        const newDispIds = this.dispensingLogs.map(r => r.id).filter(id => id != null && !prevDispIds.has(id));
+        const isFirstLoad = this._firstLoad;
+        this._firstLoad = false;
+
         this.setState(s => ({
           dataStatus: 'ok', dataError: '', lastSync: syncLabel,
           sheetLastSync: now, refreshing: false,
-          users: users.length ? users : s.users
+          users: users.length ? users : s.users,
+          highlightReceivingIds: isFirstLoad ? [] : newRecvIds,
+          highlightDispensingIds: isFirstLoad ? [] : newDispIds
         }));
+
+        if (!isFirstLoad && (newRecvIds.length || newDispIds.length)) {
+          this.playNotifySound();
+          clearTimeout(this._highlightTimer);
+          this._highlightTimer = setTimeout(() => {
+            this.setState({ highlightReceivingIds: [], highlightDispensingIds: [] });
+          }, 6000);
+        }
         if (manual) this.showToast('อัปเดตข้อมูลจากชีตเรียบร้อย');
       })
       .catch(err => {
@@ -1525,6 +1546,13 @@ class Component extends DCLogic {
         this.setState({ dataStatus: 'error', dataError: msg, refreshing: false });
         if (manual) this.showToast('เชื่อมต่อชีตไม่สำเร็จ — ' + msg);
       });
+  }
+
+  playNotifySound() {
+    try {
+      const audio = new Audio('assets/notification.mp3');
+      audio.play().catch(() => {});
+    } catch {}
   }
 
   showToast(msg) {
@@ -1697,6 +1725,8 @@ class Component extends DCLogic {
       else { av = a.date.getTime(); bv = b.date.getTime(); }
       if (av < bv) return -1 * dir;
       if (av > bv) return 1 * dir;
+      // Tiebreak by insertion order (id) so same-day entries still show newest-first.
+      if (sortKey !== 'name' && sortKey !== 'qty') return (b.id || 0) - (a.id || 0);
       return 0;
     });
     return rows.map((r, i) => ({ ...r, idx: i + 1 }));
@@ -2056,12 +2086,22 @@ class Component extends DCLogic {
     const recFiltered = this.getFilteredLog(this.receivingLogs, this.state.recSearch, this.state.recSortKey, this.state.recSortDir);
     const recTotalPages = Math.max(1, Math.ceil(recFiltered.length / pageSize));
     const recCurrentPage = Math.min(this.state.recPage, recTotalPages);
-    const recPagedRows = recFiltered.slice((recCurrentPage - 1) * pageSize, recCurrentPage * pageSize).map(r => this.withExpColor(r));
+    const recPagedRows = recFiltered.slice((recCurrentPage - 1) * pageSize, recCurrentPage * pageSize).map(r => ({
+      ...this.withExpColor(r),
+      rowStyle: this.state.highlightReceivingIds.includes(r.id)
+        ? { borderTop: '1px solid var(--border)', background: 'rgba(34,197,94,0.16)', transition: 'background 1.5s ease' }
+        : { borderTop: '1px solid var(--border)' }
+    }));
 
     const dispFiltered = this.getFilteredLog(this.dispensingLogs, this.state.dispSearch, this.state.dispSortKey, this.state.dispSortDir);
     const dispTotalPages = Math.max(1, Math.ceil(dispFiltered.length / pageSize));
     const dispCurrentPage = Math.min(this.state.dispPage, dispTotalPages);
-    const dispPagedRows = dispFiltered.slice((dispCurrentPage - 1) * pageSize, dispCurrentPage * pageSize).map(r => this.withExpColor(r));
+    const dispPagedRows = dispFiltered.slice((dispCurrentPage - 1) * pageSize, dispCurrentPage * pageSize).map(r => ({
+      ...this.withExpColor(r),
+      rowStyle: this.state.highlightDispensingIds.includes(r.id)
+        ? { borderTop: '1px solid var(--border)', background: 'rgba(239,68,68,0.14)', transition: 'background 1.5s ease' }
+        : { borderTop: '1px solid var(--border)' }
+    }));
 
     const autoSendOn = this.state.autoSendEnabled;
 

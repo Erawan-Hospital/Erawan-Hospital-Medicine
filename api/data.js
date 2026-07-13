@@ -21,8 +21,8 @@ export default async function handler(req, res) {
   try {
     const [medicines, receiving, dispensing, users] = await Promise.all([
       sb('medicines?select=id,code,name,unit,warehouse,lot,expiry,qty&order=name.asc'),
-      sb('receiving_logs?select=log_date,log_time,name,unit,qty,lot,expiry,person,place&order=log_date.desc'),
-      sb('dispensing_logs?select=log_date,log_time,name,unit,qty,lot,expiry,person,place&order=log_date.desc'),
+      sb('receiving_logs?select=id,log_date,log_time,name,unit,qty,lot,expiry,person,place&order=log_date.desc,id.desc'),
+      sb('dispensing_logs?select=id,log_date,log_time,name,unit,qty,lot,expiry,person,place&order=log_date.desc,id.desc'),
       sb('users?select=name,username,role&order=id.asc')
     ]);
 
@@ -45,6 +45,7 @@ export default async function handler(req, res) {
 
 function mapLog(r) {
   return {
+    id: r.id,
     date: r.log_date,
     time: r.log_time || '',
     name: r.name,
