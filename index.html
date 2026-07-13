@@ -24,13 +24,29 @@
     .print-only { display: none; }
     .print-watermark { display: none; }
     @media print {
+      @page { margin: 12mm; }
       .app-sidebar, .no-print, button { display: none !important; }
       .print-only { display: block !important; }
-      .app-root { display: block !important; }
-      body, [style*="var(--bg)"] { background: #fff !important; color: #111 !important; }
-      * { box-shadow: none !important; }
+      /* Force a clean light theme for printing, regardless of the app's dark/light mode.
+         These override the inline CSS variables that the table cells read from. */
+      .app-root {
+        display: block !important;
+        --bg: #ffffff !important; --card: #ffffff !important; --card-2: #f2f4f7 !important;
+        --border: #333333 !important; --text: #111111 !important; --text-dim: #555555 !important;
+        background: #ffffff !important; color: #111111 !important;
+      }
+      body { background: #ffffff !important; color: #111111 !important; }
+      * { box-shadow: none !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      /* Let the table draw its own grid; drop the rounded card wrapper look */
+      .app-root div[style*="border-radius:14px"] { border: none !important; border-radius: 0 !important; overflow: visible !important; }
+      .app-root div[style*="overflow-x:auto"] { overflow: visible !important; }
+      table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; }
       table, tr, td, th { border: 1px solid #333 !important; }
-      td, th { padding: 6px 8px !important; }
+      thead tr { background: #eceef1 !important; }
+      thead th { color: #111 !important; font-weight: 700 !important; }
+      td, th { padding: 6px 8px !important; vertical-align: top; }
+      tr { break-inside: avoid; page-break-inside: avoid; }
+      thead { display: table-header-group; }
       .print-watermark {
         display: flex; position: fixed; inset: 0; align-items: center; justify-content: center;
         z-index: -1; opacity: 0.07; pointer-events: none;
