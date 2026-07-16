@@ -6,6 +6,7 @@
 
 import { sb, supabaseConfigured } from './_supabase.js';
 import { requireAdmin } from './_auth.js';
+import { getOrCreateCode } from './_stock.js';
 
 export default async function handler(req, res) {
   if (!supabaseConfigured()) {
@@ -22,8 +23,11 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       if (!(await requireAdmin(req, res))) return;
-      const { code, name, unit, warehouse, lot, expiry, qty, company } = req.body || {};
+      const { name, unit, warehouse, lot, expiry, qty, company } = req.body || {};
       if (!name) { res.status(400).json({ ok: false, error: 'ต้องระบุชื่อยา' }); return; }
+      // รหัสยา is fixed per drug name — never taken from client input, always
+      // reused from an existing lot of the same name or freshly minted.
+      const code = await getOrCreateCode(name);
       const [row] = await sb('medicines', {
         method: 'POST',
         prefer: 'return=representation',
@@ -35,12 +39,14 @@ export default async function handler(req, res) {
 
     if (req.method === 'PUT') {
       if (!(await requireAdmin(req, res))) return;
-      const { id, code, name, unit, warehouse, lot, expiry, qty, company } = req.body || {};
+      const { id, name, unit, warehouse, lot, expiry, qty, company } = req.body || {};
       if (!id) { res.status(400).json({ ok: false, error: 'ต้องระบุ id' }); return; }
+      // รหัสยา is intentionally left out here — it's fixed once assigned and
+      // never changes on edit, even if the name is edited afterward.
       const [row] = await sb('medicines?id=eq.' + encodeURIComponent(id), {
         method: 'PATCH',
         prefer: 'return=representation',
-        body: { code, name, unit, warehouse, lot, expiry: expiry || null, qty, company, updated_at: new Date().toISOString() }
+        body: { name, unit, warehouse, lot, expiry: expiry || null, qty, company, updated_at: new Date().toISOString() }
       });
       res.status(200).json({ ok: true, medicine: row });
       return;

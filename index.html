@@ -1071,7 +1071,7 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">รหัสยา</div>
-              <input type="text" value="{{ medFormCode }}" onChange="{{ onMedFormCodeChange }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
+              <input type="text" value="{{ medFormCodeDisplay }}" disabled="{{ true }}" style="width:100%; background:var(--card-2); border:1px solid var(--border); color:var(--text-dim); padding:10px 12px; border-radius:8px; font-size:13.5px; font-family:inherit;" />
             </div>
             <div>
               <div style="font-size:12px; color:var(--text-dim); margin-bottom:5px;">หน่วยนับ</div>
@@ -1615,7 +1615,7 @@ class Component extends DCLogic {
       return {
         idx: i + 1,
         id: r.id != null ? r.id : null,
-        code: r.code || ('YA-' + String(1001 + i).padStart(5, '0')),
+        code: r.code || '-',
         name: r.name || '-',
         unit: r.unit || '',
         warehouse: r.warehouse || '-',
@@ -1764,7 +1764,7 @@ class Component extends DCLogic {
     const lot = s.medFormLot.trim();
     if (!name || !lot) { this.setState({ medFormError: 'กรุณากรอกชื่อยาและเลขล็อต' }); return; }
     const body = {
-      code: s.medFormCode.trim(), name, unit: s.medFormUnit.trim(), warehouse: s.medFormWarehouse.trim(),
+      name, unit: s.medFormUnit.trim(), warehouse: s.medFormWarehouse.trim(),
       company: s.medFormCompany.trim(), lot, expiry: s.medFormExpiry || null, qty: Number(s.medFormQty) || 0
     };
     this.setState({ medFormSaving: true, medFormError: '' });
@@ -1784,6 +1784,15 @@ class Component extends DCLogic {
     return 'LOT-' + v.replace(/^LOT-?/i, '');
   }
 
+  // Local (not UTC) date + time, so a save near midnight doesn't get filed
+  // under the wrong calendar day.
+  nowDateTimeParts() {
+    const now = new Date();
+    const log_date = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    const log_time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    return { log_date, log_time };
+  }
+
   openRecvForm() {
     this.setState({
       recvFormOpen: true, recvName: '', recvUnit: '', recvWarehouse: WAREHOUSES[0], recvLot: 'LOT-', recvExpiry: '',
@@ -1799,12 +1808,10 @@ class Component extends DCLogic {
     const qty = Number(s.recvQty);
     if (!name || lot === 'LOT-' || !lot || !qty) { this.setState({ recvError: 'กรุณากรอกชื่อยา เลขล็อต และจำนวนให้ครบ' }); return; }
     this.setState({ recvSaving: true, recvError: '' });
-    const now = new Date();
     this.adminApi('/api/receiving', 'POST', {
       name, unit: s.recvUnit.trim(), warehouse: s.recvWarehouse.trim(), lot,
       expiry: s.recvExpiry || null, qty, person: this.state.loggedInUser.name, place: s.recvPlace.trim(),
-      log_date: now.toISOString().slice(0, 10),
-      log_time: String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
+      ...this.nowDateTimeParts()
     })
       .then(() => {
         this.setState({ recvFormOpen: false, recvSaving: false });
@@ -1830,11 +1837,9 @@ class Component extends DCLogic {
     const qty = Number(s.dispQty);
     if (!name || lot === 'LOT-' || !lot || !qty) { this.setState({ dispError: 'กรุณากรอกชื่อยา เลขล็อต และจำนวนให้ครบ' }); return; }
     this.setState({ dispSaving: true, dispError: '' });
-    const now = new Date();
     this.adminApi('/api/dispensing', 'POST', {
       name, unit: s.dispUnit.trim(), lot, qty, person: this.state.loggedInUser.name, place: s.dispPlace.trim(),
-      log_date: now.toISOString().slice(0, 10),
-      log_time: String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0')
+      ...this.nowDateTimeParts()
     })
       .then(() => {
         this.setState({ dispFormOpen: false, dispSaving: false });
@@ -2489,7 +2494,7 @@ class Component extends DCLogic {
       medFormOpen: this.state.medFormOpen,
       medFormTitle: this.state.medFormId !== null ? 'แก้ไขข้อมูลยา' : 'เพิ่มยาใหม่',
       medFormCode: this.state.medFormCode,
-      onMedFormCodeChange: (e) => this.setState({ medFormCode: e.target.value, medFormError: '' }),
+      medFormCodeDisplay: this.state.medFormId !== null ? (this.state.medFormCode || '-') : 'จะกำหนดให้อัตโนมัติ',
       medFormName: this.state.medFormName,
       onMedFormNameChange: (e) => this.setState({ medFormName: e.target.value, medFormError: '' }),
       medFormUnit: this.state.medFormUnit,
