@@ -1,7 +1,9 @@
 // Vercel Serverless Function: /api/medicines
 // GET    -> list all medicine lots
 // POST   -> create a new lot                { adminUsername, adminPassword, code, name, unit, warehouse, lot, expiry, qty }
-// PUT    -> update a lot by id               { adminUsername, adminPassword, id, ...fields }
+// PUT    -> update a lot by id               { adminUsername, adminPassword, id, code, ...fields }
+//           an admin-supplied `code` cascades to every lot sharing that drug's
+//           (pre-edit) name, keeping "one code per drug name" intact
 // DELETE -> remove a lot                     ?id=123  (adminUsername/adminPassword in body)
 
 import { sb, supabaseConfigured } from './_supabase.js';
@@ -39,10 +41,23 @@ export default async function handler(req, res) {
 
     if (req.method === 'PUT') {
       if (!(await requireAdmin(req, res))) return;
-      const { id, name, unit, warehouse, lot, expiry, qty, company } = req.body || {};
+      const { id, code, name, unit, warehouse, lot, expiry, qty, company } = req.body || {};
       if (!id) { res.status(400).json({ ok: false, error: 'ต้องระบุ id' }); return; }
-      // รหัสยา is intentionally left out here — it's fixed once assigned and
-      // never changes on edit, even if the name is edited afterward.
+
+      // รหัสยา is shared by every lot of the same drug name. An admin editing
+      // it here must cascade the new code to every lot currently under that
+      // name (matched before this edit, in case the name is changing too) so
+      // codes never drift apart for the same drug.
+      if (code && code.trim()) {
+        const [existing] = await sb('medicines?id=eq.' + encodeURIComponent(id) + '&select=name,code');
+        if (existing && code.trim() !== existing.code) {
+          await sb('medicines?name=eq.' + encodeURIComponent(existing.name), {
+            method: 'PATCH',
+            body: { code: code.trim() }
+          });
+        }
+      }
+
       const [row] = await sb('medicines?id=eq.' + encodeURIComponent(id), {
         method: 'PATCH',
         prefer: 'return=representation',
