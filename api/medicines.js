@@ -1,6 +1,9 @@
 // Vercel Serverless Function: /api/medicines
 // GET    -> list all medicine lots
 // POST   -> create a new lot                { adminUsername, adminPassword, code, name, unit, warehouse, lot, expiry, qty }
+//           รหัสยา is always admin-entered (Ministry-issued, can't be auto-
+//           numbered) — reused if this drug name already has one, otherwise
+//           `code` is required
 // PUT    -> update a lot by id               { adminUsername, adminPassword, id, code, ...fields }
 //           an admin-supplied `code` cascades to every lot sharing that drug's
 //           (pre-edit) name, keeping "one code per drug name" intact
@@ -8,7 +11,7 @@
 
 import { sb, supabaseConfigured } from './_supabase.js';
 import { requireAdmin } from './_auth.js';
-import { getOrCreateCode } from './_stock.js';
+import { findCodeByName } from './_stock.js';
 
 export default async function handler(req, res) {
   if (!supabaseConfigured()) {
@@ -25,15 +28,29 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       if (!(await requireAdmin(req, res))) return;
-      const { name, unit, warehouse, lot, expiry, qty, company } = req.body || {};
+      const { code, name, unit, warehouse, lot, expiry, qty, company } = req.body || {};
       if (!name) { res.status(400).json({ ok: false, error: 'ต้องระบุชื่อยา' }); return; }
-      // รหัสยา is fixed per drug name — never taken from client input, always
-      // reused from an existing lot of the same name or freshly minted.
-      const code = await getOrCreateCode(name);
+
+      // รหัสยา is fixed per drug name and always comes from the admin (the
+      // Ministry issues these — they can't be auto-numbered). Reuse the
+      // existing code for this name if there is one; a differing typed code
+      // cascades to every lot of that name, same as the edit flow. A brand
+      // new drug name requires the admin to supply a code.
+      const existingCode = await findCodeByName(name);
+      const typedCode = code && code.trim() ? code.trim() : '';
+      if (!existingCode && !typedCode) {
+        res.status(400).json({ ok: false, error: 'กรุณากรอกรหัสยา (ยานี้ยังไม่มีรหัสในระบบ)' });
+        return;
+      }
+      const finalCode = typedCode || existingCode;
+      if (existingCode && typedCode && typedCode !== existingCode) {
+        await sb('medicines?name=eq.' + encodeURIComponent(name), { method: 'PATCH', body: { code: typedCode } });
+      }
+
       const [row] = await sb('medicines', {
         method: 'POST',
         prefer: 'return=representation',
-        body: { code, name, unit, warehouse, lot, expiry: expiry || null, qty: qty || 0, company }
+        body: { code: finalCode, name, unit, warehouse, lot, expiry: expiry || null, qty: qty || 0, company }
       });
       res.status(200).json({ ok: true, medicine: row });
       return;

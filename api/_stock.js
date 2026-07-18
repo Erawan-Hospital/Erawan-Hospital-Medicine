@@ -11,15 +11,24 @@ export async function findLot(name, lot) {
   return rows && rows[0] ? rows[0] : null;
 }
 
-// รหัสยา (drug code) is fixed per drug NAME, never per lot. If this name
-// already has a code anywhere in the catalog, reuse it; otherwise mint the
-// next sequential YA-##### code. Any code typed/sent by the caller is
-// ignored on purpose — codes must never drift between lots of the same drug.
-export async function getOrCreateCode(name) {
+// รหัสยา (drug code) is fixed per drug NAME, never per lot. Returns the
+// existing code for this name if the catalog already has one, else null.
+export async function findCodeByName(name) {
   const existing = await sb(
     'medicines?select=code&name=eq.' + encodeURIComponent(name) + '&code=not.is.null&order=id.asc&limit=1'
   );
-  if (existing && existing[0] && existing[0].code) return existing[0].code;
+  return existing && existing[0] && existing[0].code ? existing[0].code : null;
+}
+
+// Used only by the receiving/dispensing "log a movement for an unfamiliar
+// lot" path, where there's no admin UI to type a code. Reuses the name's
+// existing code if there is one; otherwise mints a sequential YA-##### code
+// as a placeholder until an admin corrects it via รายการยา (codes there are
+// always admin-entered — see api/medicines.js — since real values come from
+// the Ministry and can't be auto-numbered).
+export async function getOrCreateCode(name) {
+  const found = await findCodeByName(name);
+  if (found) return found;
 
   const rows = await sb('medicines?select=code&code=not.is.null');
   let maxNum = 1000;
