@@ -1368,7 +1368,8 @@ const STATUS_COLORS = {
   d90:     { solid: '#f97316', bg: 'rgba(249,115,22,0.14)' },
   d180:    { solid: '#f59e0b', bg: 'rgba(245,158,11,0.14)' },
   d365:    { solid: '#10b981', bg: 'rgba(16,185,129,0.14)' },
-  normal:  { solid: '#3b82f6', bg: 'rgba(59,130,246,0.14)' }
+  normal:  { solid: '#3b82f6', bg: 'rgba(59,130,246,0.14)' },
+  unknown: { solid: '#94a3b8', bg: 'rgba(148,163,184,0.14)' }
 };
 
 function fmtThaiDate(date) {
@@ -1623,8 +1624,8 @@ class Component extends DCLogic {
 
     const meds = Array.isArray(payload.medicines) ? payload.medicines : [];
     this.allDrugs = meds.map((r, i) => {
-      const expiry = toDate(r.expiry) || new Date(midnight.getTime());
-      const daysLeft = Math.round((expiry.getTime() - midnight.getTime()) / 86400000);
+      const expiry = toDate(r.expiry);
+      const daysLeft = expiry ? Math.round((expiry.getTime() - midnight.getTime()) / 86400000) : null;
       return {
         idx: i + 1,
         id: r.id != null ? r.id : null,
@@ -1635,8 +1636,8 @@ class Component extends DCLogic {
         company: r.company || '-',
         lot: r.lot || '-',
         expiry, daysLeft,
-        expiryLabel: fmtThaiDate(expiry),
-        daysLabel: daysLeft < 0 ? ('หมดอายุแล้ว ' + Math.abs(daysLeft) + ' วัน') : ('เหลือ ' + daysLeft + ' วัน'),
+        expiryLabel: expiry ? fmtThaiDate(expiry) : 'ไม่ระบุ',
+        daysLabel: daysLeft === null ? '' : (daysLeft < 0 ? ('หมดอายุแล้ว ' + Math.abs(daysLeft) + ' วัน') : ('เหลือ ' + daysLeft + ' วัน')),
         qty: num(r.qty)
       };
     });
@@ -1870,7 +1871,7 @@ class Component extends DCLogic {
     if (s) rows = rows.filter(r => r.name.toLowerCase().includes(s) || r.lot.toLowerCase().includes(s) || r.code.toLowerCase().includes(s));
     if (this.state.warehouseFilter !== 'all') rows = rows.filter(r => r.warehouse === this.state.warehouseFilter);
     if (this.state.statusFilter !== 'all') rows = rows.filter(r => this.getStatus(r.daysLeft).key === this.state.statusFilter);
-    if (this.state.daysMaxFilter !== null) rows = rows.filter(r => r.daysLeft <= this.state.daysMaxFilter);
+    if (this.state.daysMaxFilter !== null) rows = rows.filter(r => r.daysLeft !== null && r.daysLeft !== undefined && r.daysLeft <= this.state.daysMaxFilter);
 
     const key = this.state.sortKey;
     const dir = this.state.sortDir === 'asc' ? 1 : -1;
@@ -1920,6 +1921,7 @@ class Component extends DCLogic {
 
   getStatus(daysLeft) {
     const t = this.state.thresholds;
+    if (daysLeft === null || daysLeft === undefined) return { key: 'unknown', label: 'ไม่ระบุวันหมดอายุ', ...STATUS_COLORS.unknown };
     if (daysLeft < 0) return { key: 'expired', label: 'หมดอายุ', ...STATUS_COLORS.expired };
     if (daysLeft <= t.d30) return { key: 'd30', label: '≤' + t.d30 + ' วัน', ...STATUS_COLORS.d30 };
     if (daysLeft <= t.d90) return { key: 'd90', label: '≤' + t.d90 + ' วัน', ...STATUS_COLORS.d90 };
@@ -2085,6 +2087,7 @@ class Component extends DCLogic {
     const counts = { expired: 0, d30: 0, d90: 0, d180: 0, d365: 0 };
     let cumD30 = 0, cumD90 = 0, cumD180 = 0, cumD365 = 0;
     this.allDrugs.forEach(r => {
+      if (r.daysLeft === null || r.daysLeft === undefined) return; // no expiry on record - can't be "expiring soon"
       if (r.daysLeft < 0) counts.expired++;
       if (r.daysLeft <= th.d30) cumD30++;
       if (r.daysLeft <= th.d90) cumD90++;
@@ -2110,7 +2113,7 @@ class Component extends DCLogic {
     ];
 
     const criticalTop10 = [...this.allDrugs]
-      .filter(r => r.daysLeft <= th.d30)
+      .filter(r => r.daysLeft !== null && r.daysLeft !== undefined && r.daysLeft <= th.d30)
       .sort((a, b) => a.daysLeft - b.daysLeft)
       .slice(0, 10)
       .map((r, i) => ({ ...r, idx: i + 1, status: this.getStatus(r.daysLeft), onOpenDetail: () => this.openDrugDetail(r.name) }));
@@ -2123,7 +2126,8 @@ class Component extends DCLogic {
       { value: 'd90', label: '≤90 วัน' },
       { value: 'd180', label: '≤180 วัน' },
       { value: 'd365', label: '≤365 วัน' },
-      { value: 'normal', label: 'ปกติ' }
+      { value: 'normal', label: 'ปกติ' },
+      { value: 'unknown', label: 'ไม่ระบุวันหมดอายุ' }
     ];
 
     const filtered = this.getFiltered();
